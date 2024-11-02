@@ -1,20 +1,19 @@
 import SwiftUI
 
 struct CalendarView: View {
-    @State private var selectedDate: Date
+    @Binding var selectedDate: Date
     @State private var currentWeekIndex: Int = 0
     private let calendar: Calendar
     private let monthFormatter: DateFormatter
     private let weekdayFormatter: DateFormatter
 
-    init() {
+    init(selectedDate: Binding<Date>) {
+        _selectedDate = selectedDate
+
         // Configure the calendar to start the week on Sunday
         var calendar = Calendar.current
-        calendar.firstWeekday = 1 // 1 = Sunday, 2 = Monday, etc.
+        calendar.firstWeekday = 1
         self.calendar = calendar
-
-        // Initialize the selected date to today
-        _selectedDate = State(initialValue: Date())
 
         // Date formatter for displaying the month and year
         monthFormatter = DateFormatter()
@@ -34,9 +33,9 @@ struct CalendarView: View {
     }
 
     private func resetToToday() {
-        selectedDate = Date()
-        withAnimation {
+        withAnimation(.spring(duration: 0.3, bounce: 0.2)) {
             currentWeekIndex = 0
+            selectedDate = Date()
         }
     }
 
@@ -44,17 +43,23 @@ struct CalendarView: View {
         VStack(spacing: 16) {
             // Header
             ZStack {
-                VStack(spacing: 4) {
-                    Text("History")
-                        .font(.headline)
-                        .foregroundColor(.primary)
+                // VStack(spacing: 4) {
+                //     Text("History")
+                //         .font(.headline)
+                //         .foregroundColor(.primary)
 
-                    // Month
-                    Text(displayMonth)
-                        .font(.subheadline)
-                        .foregroundColor(.primary.opacity(0.8))
-                }
+                //     // Month
+                //     Text(displayMonth)
+                //         .font(.subheadline)
+                //         .foregroundColor(.primary.opacity(0.8))
+                // }
 
+                // Month
+                Text(displayMonth)
+                    .font(.subheadline)
+                    .foregroundColor(.primary.opacity(0.8))
+
+                // Today Button
                 HStack {
                     Spacer()
                     Button(action: resetToToday) {
@@ -102,12 +107,13 @@ struct CalendarView: View {
                         }
                     }
                     .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+                    // .animation(.easeInOut, value: currentWeekIndex)
                 }
                 .offset(y: 8)
             }
             .frame(height: 70) // Adjusted height to accommodate the week view
         }
-        .padding(.top)
+        // .padding(.top)
     }
 }
 
@@ -171,13 +177,14 @@ struct DateCell: View {
 
     var body: some View {
         Text(dayFormatter.string(from: date))
-            // .font(.system(size: 20, weight: .medium))
-            .foregroundColor(isPastOrToday ? .primary : .primary.opacity(0.5))
+            .font(.subheadline)
+            .fontWeight(.medium)
+            .foregroundColor(isSelected ? .black : (isPastOrToday ? .primary : .primary.opacity(0.5)))
             .frame(width: 32, height: 32)
             .background(
                 isSelected ?
                     RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.primary.opacity(0.2)) :
+                    .fill(Color.primary) :
                     nil
             )
             .clipShape(RoundedRectangle(cornerRadius: 8))
@@ -185,5 +192,5 @@ struct DateCell: View {
 }
 
 #Preview {
-    CalendarView()
+    CalendarView(selectedDate: .constant(Date()))
 }

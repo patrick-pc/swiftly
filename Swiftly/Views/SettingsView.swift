@@ -4,16 +4,16 @@ struct SettingsView: View {
     @EnvironmentObject var authVM: AuthViewModel
 
     var body: some View {
-        HStack {
-            Text("Settings")
-                .font(.title3)
-                .fontWeight(.semibold)
-                .fontDesign(.rounded)
-                .foregroundStyle(.primary)
-                .fixedSize(horizontal: false, vertical: true)
-                .clipped()
-        }
-        .padding()
+        // HStack {
+        //     Text("Settings")
+        //         .font(.title3)
+        //         .fontWeight(.semibold)
+        //         .fontDesign(.rounded)
+        //         .foregroundStyle(.primary)
+        //         .fixedSize(horizontal: false, vertical: true)
+        //         .clipped()
+        // }
+        // .padding()
 
         ScrollView {
             VStack(spacing: 24) {

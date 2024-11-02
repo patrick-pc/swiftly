@@ -23,14 +23,14 @@ struct HomeView: View {
                         }
                     }
                 }
-                NavigationLink(destination: CalendarView()) {
-                    SharedComponents.card {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Calendar")
-                                .font(.headline)
-                        }
-                    }
-                }
+                // NavigationLink(destination: CalendarView()) {
+                //     SharedComponents.card {
+                //         VStack(alignment: .leading, spacing: 8) {
+                //             Text("Calendar")
+                //                 .font(.headline)
+                //         }
+                //     }
+                // }
                 NavigationLink(destination: ArticleView()) {
                     SharedComponents.card {
                         VStack(alignment: .leading, spacing: 8) {
