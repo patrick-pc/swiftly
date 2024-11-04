@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct BottomNavigationView: View {
-    @State private var selectedTab = 0
+    @State private var selectedTab = 2
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -18,12 +18,12 @@ struct BottomNavigationView: View {
                     }
             }
             .tabItem {
-                Label("Logs", systemImage: "calendar")
+                // Label("Logs", systemImage: "calendar")
+                Image(systemName: "calendar")
             }
             .tag(0)
 
             NavigationStack {
-                // HomeView()
                 ArticleView()
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
@@ -36,14 +36,22 @@ struct BottomNavigationView: View {
                     }
             }
             .tabItem {
-                Label("Learn", systemImage: "book.pages.fill")
+                // Label("Learn", systemImage: "book.pages.fill")
+                Image(systemName: "book.pages.fill")
             }
             .tag(1)
 
             NavigationStack {
-                // UserView()
-                // Text("Insights Here")
                 HomeView()
+            }
+            .tabItem {
+                // Label("Insights", systemImage: "square.grid.2x2.fill")
+                Image(systemName: "plus.circle.fill")
+            }
+            .tag(2)
+
+            NavigationStack {
+                Text("Insights Here")
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .principal) {
@@ -55,12 +63,12 @@ struct BottomNavigationView: View {
                     }
             }
             .tabItem {
-                Label("Insights", systemImage: "square.grid.2x2.fill")
+                // Label("Insights", systemImage: "square.grid.2x2.fill")
+                Image(systemName: "square.grid.2x2.fill")
             }
-            .tag(2)
+            .tag(3)
 
             NavigationStack {
-                // UserView()
                 SettingsView()
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
@@ -73,9 +81,10 @@ struct BottomNavigationView: View {
                     }
             }
             .tabItem {
-                Label("Settings", systemImage: "gearshape.fill")
+                // Label("Settings", systemImage: "gearshape.fill")
+                Image(systemName: "gearshape.fill")
             }
-            .tag(3)
+            .tag(4)
         }
         // .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never)) // Enable swipe gestures
         // .safeAreaInset(edge: .bottom) {

@@ -1,10 +1,3 @@
-//
-//  SwiftlyApp.swift
-//  Swiftly
-//
-//  Created by Patrick on 10/25/24.
-//
-
 import FirebaseCore
 import RevenueCat
 import SuperwallKit
@@ -90,7 +83,10 @@ private extension SwiftlyApp {
 }
 
 class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
-    func application(_: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+    func application(
+        _: UIApplication,
+        didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]? = nil
+    ) -> Bool {
         FirebaseApp.configure()
 
         return true

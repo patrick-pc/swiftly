@@ -1,10 +1,3 @@
-//
-//  SplashView.swift
-//  Swiftly
-//
-//  Created by Patrick on 10/25/24.
-//
-
 import SwiftUI
 
 struct SplashView: View {
@@ -16,12 +9,20 @@ struct SplashView: View {
         ZStack {
             backgroundColor.edgesIgnoringSafeArea(.all)
 
-            Label("Swiftly", systemImage: "swift")
-                .fontWeight(.medium)
-                .foregroundColor(foregroundColor)
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(Color.orange)
+                    .frame(width: 24, height: 24)
+                    .foregroundColor(.orange)
+
+                Text("biome")
+                    .foregroundColor(foregroundColor)
+            }
+            .font(.title3)
+            .fontWeight(.medium)
         }
         .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 withAnimation {
                     isActive = true
                 }
