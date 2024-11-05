@@ -29,11 +29,13 @@ struct VisionView: View {
                                         ForEach(tips) { tip in
                                             HStack(alignment: .top, spacing: 16) {
                                                 Text(tip.emoji)
-                                                    .font(.headline)
+                                                    .font(.title3)
+                                                    .fontWeight(.semibold)
 
                                                 VStack(alignment: .leading, spacing: 16) {
                                                     Text(tip.tip)
-                                                        .font(.headline)
+                                                        .font(.title3)
+                                                        .fontWeight(.semibold)
                                                         .fixedSize(horizontal: false, vertical: true)
 
                                                     SharedComponents.card {
@@ -57,11 +59,13 @@ struct VisionView: View {
                                         ForEach(symptoms) { symptom in
                                             HStack(alignment: .top, spacing: 16) {
                                                 Text(symptom.emoji)
-                                                    .font(.headline)
+                                                    .font(.title3)
+                                                    .fontWeight(.semibold)
 
                                                 VStack(alignment: .leading, spacing: 16) {
                                                     Text(symptom.symptom)
-                                                        .font(.headline)
+                                                        .font(.title3)
+                                                        .fontWeight(.semibold)
                                                         .fixedSize(horizontal: false, vertical: true)
 
                                                     SharedComponents.card {

@@ -12,7 +12,8 @@ struct HomeView: View {
         LogItem(id: 5, title: "Stool", description: "Any bowel movements?"),
     ]
     @State private var currentIndex: Int = 0
-    @State private var showingVisionView = false
+    @State private var showFoodView = false
+    @State private var showMoodView = false
 
     var body: some View {
         NavigationStack {
@@ -46,7 +47,9 @@ struct HomeView: View {
                     }
                     .onTapGesture {
                         if item.id == 1 {
-                            showingVisionView.toggle()
+                            showFoodView.toggle()
+                        } else if item.id == 2 {
+                            showMoodView.toggle()
                         }
                     }
                 }
@@ -93,13 +96,27 @@ struct HomeView: View {
                 // }
                 // .padding(.horizontal)
             }
-            .sheet(isPresented: $showingVisionView) {
+            .sheet(isPresented: $showFoodView) {
                 NavigationStack {
                     VisionView()
                         .navigationBarTitleDisplayMode(.inline)
                         .toolbar {
                             ToolbarItem(placement: .principal) {
                                 Text("Gut Score")
+                                    .font(.title3)
+                                    .fontWeight(.semibold)
+                                    .fontDesign(.rounded)
+                            }
+                        }
+                }
+            }
+            .sheet(isPresented: $showMoodView) {
+                NavigationStack {
+                    MoodView()
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .principal) {
+                                Text("Mood")
                                     .font(.title3)
                                     .fontWeight(.semibold)
                                     .fontDesign(.rounded)
