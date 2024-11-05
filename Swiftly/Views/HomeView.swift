@@ -14,6 +14,7 @@ struct HomeView: View {
     @State private var currentIndex: Int = 0
     @State private var showFoodView = false
     @State private var showMoodView = false
+    @State private var showSymptomsView = false
 
     var body: some View {
         NavigationStack {
@@ -50,6 +51,8 @@ struct HomeView: View {
                             showFoodView.toggle()
                         } else if item.id == 2 {
                             showMoodView.toggle()
+                        } else if item.id == 3 {
+                            showSymptomsView.toggle()
                         }
                     }
                 }
@@ -102,7 +105,7 @@ struct HomeView: View {
                         .navigationBarTitleDisplayMode(.inline)
                         .toolbar {
                             ToolbarItem(placement: .principal) {
-                                Text("Gut Score")
+                                Text("Meal Log")
                                     .font(.title3)
                                     .fontWeight(.semibold)
                                     .fontDesign(.rounded)
@@ -116,7 +119,21 @@ struct HomeView: View {
                         .navigationBarTitleDisplayMode(.inline)
                         .toolbar {
                             ToolbarItem(placement: .principal) {
-                                Text("Mood")
+                                Text("Mood Log")
+                                    .font(.title3)
+                                    .fontWeight(.semibold)
+                                    .fontDesign(.rounded)
+                            }
+                        }
+                }
+            }
+            .sheet(isPresented: $showSymptomsView) {
+                NavigationStack {
+                    SymptomsView()
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .principal) {
+                                Text("Symptoms Log")
                                     .font(.title3)
                                     .fontWeight(.semibold)
                                     .fontDesign(.rounded)
