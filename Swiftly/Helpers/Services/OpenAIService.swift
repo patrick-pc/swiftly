@@ -1,10 +1,3 @@
-//
-//  OpenAIService.swift
-//  Swiftly
-//
-//  Created by Patrick on 10/29/24.
-//
-
 import FirebaseFunctions
 import Foundation
 
@@ -37,31 +30,33 @@ class OpenAIService {
 
     func analyzeImage(base64Image: String) async throws -> [String: Any] {
         let data = ["image": base64Image]
-        
+
         let result = try await functions.httpsCallable("openai-api/vision").call(data)
-        
+
         guard let response = result.data as? [String: Any],
               let choices = response["choices"] as? [[String: Any]],
               let firstChoice = choices.first,
               let message = firstChoice["message"] as? [String: Any],
-              let content = message["content"] as? String else {
+              let content = message["content"] as? String
+        else {
             throw NSError(
                 domain: "OpenAIService",
                 code: 0,
                 userInfo: [NSLocalizedDescriptionKey: "Invalid response format"]
             )
         }
-        
+
         // Parse the content string which contains the JSON
         guard let contentData = content.data(using: .utf8),
-              let jsonResponse = try? JSONSerialization.jsonObject(with: contentData) as? [String: Any] else {
+              let jsonResponse = try? JSONSerialization.jsonObject(with: contentData) as? [String: Any]
+        else {
             throw NSError(
                 domain: "OpenAIService",
                 code: 0,
                 userInfo: [NSLocalizedDescriptionKey: "Invalid JSON content format"]
             )
         }
-        
+
         return jsonResponse
     }
 }

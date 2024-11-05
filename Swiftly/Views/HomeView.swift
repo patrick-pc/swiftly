@@ -4,47 +4,75 @@ import SuperwallKit
 import SwiftUI
 
 struct HomeView: View {
-    let items = [CardItem(id: 1, title: "Card 1"), CardItem(id: 2, title: "Card 2"), CardItem(id: 3, title: "Card 3")]
+    let items = [
+        LogItem(id: 1, title: "Food and Drink", description: "What have you eaten today?"),
+        LogItem(id: 2, title: "Mood", description: "How do you feel?"),
+        LogItem(id: 3, title: "Symptoms", description: "What's bothering you?"),
+        LogItem(id: 4, title: "Stress Levels", description: "How are your stress levels?"),
+        LogItem(id: 5, title: "Stool", description: "Any bowel movements?"),
+    ]
     @State private var currentIndex: Int = 0
+    @State private var showingVisionView = false
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 16) {
+                Circle()
+                    .fill(Color.orange)
+                    .frame(width: 40, height: 40)
+                    .padding(.vertical, 24)
+
+                Text("Today")
+                    .font(.headline)
+                    .fontWeight(.medium)
+
                 Carousel(spacing: 16, trailingSpace: 64, index: $currentIndex, items: items) { item in
                     SharedComponents.card {
-                        VStack(alignment: .leading, spacing: 16) {
+                        VStack(alignment: .center, spacing: 16) {
+                            Spacer()
+
                             Text(item.title)
-                                .font(.title2)
-                                .fontWeight(.semibold)
-
-                            Rectangle()
-                                .fill(Color.primary.opacity(0.1))
-                                .frame(height: 120)
-                                .cornerRadius(8)
-                        }
-                    }
-                }
-                .frame(height: 400)
-
-                NavigationLink(destination: ChatView()) {
-                    SharedComponents.card {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Chat")
                                 .font(.headline)
-                        }
-                    }
-                }
-                .padding(.horizontal)
+                                .multilineTextAlignment(.center)
 
-                NavigationLink(destination: VisionView()) {
-                    SharedComponents.card {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Vision")
-                                .font(.headline)
+                            Text(item.description)
+                                .font(.subheadline)
+                                .foregroundColor(.primary.opacity(0.5))
+                                .multilineTextAlignment(.center)
+
+                            Spacer()
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                    .onTapGesture {
+                        if item.id == 1 {
+                            showingVisionView.toggle()
                         }
                     }
                 }
-                .padding(.horizontal)
+                .frame(height: 180)
+
+                Spacer()
+
+                // NavigationLink(destination: ChatView()) {
+                //     SharedComponents.card {
+                //         VStack(alignment: .leading, spacing: 8) {
+                //             Text("Chat")
+                //                 .font(.headline)
+                //         }
+                //     }
+                // }
+                // .padding(.horizontal)
+
+                // NavigationLink(destination: VisionView()) {
+                //     SharedComponents.card {
+                //         VStack(alignment: .leading, spacing: 8) {
+                //             Text("Vision")
+                //                 .font(.headline)
+                //         }
+                //     }
+                // }
+                // .padding(.horizontal)
 
                 // NavigationLink(destination: CalendarView()) {
                 //     SharedComponents.card {
@@ -55,15 +83,29 @@ struct HomeView: View {
                 //     }
                 // }
 
-                NavigationLink(destination: ArticleView()) {
-                    SharedComponents.card {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Articles")
-                                .font(.headline)
+                // NavigationLink(destination: ArticleView()) {
+                //     SharedComponents.card {
+                //         VStack(alignment: .leading, spacing: 8) {
+                //             Text("Articles")
+                //                 .font(.headline)
+                //         }
+                //     }
+                // }
+                // .padding(.horizontal)
+            }
+            .sheet(isPresented: $showingVisionView) {
+                NavigationStack {
+                    VisionView()
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .principal) {
+                                Text("Gut Score")
+                                    .font(.title3)
+                                    .fontWeight(.semibold)
+                                    .fontDesign(.rounded)
+                            }
                         }
-                    }
                 }
-                .padding(.horizontal)
             }
         }
         // .padding()
@@ -96,13 +138,13 @@ struct Carousel<Content: View, T: Identifiable>: View {
 
     var body: some View {
         GeometryReader { proxy in
-            let width = proxy.size.width - (trailingSpace - spacing)
+            let width = abs(proxy.size.width - (trailingSpace - spacing))
             let adjustmentWidth = (trailingSpace / 2) - spacing
 
             HStack(spacing: spacing) {
                 ForEach(list) { item in
                     content(item)
-                        .frame(width: proxy.size.width - trailingSpace)
+                        .frame(width: abs(proxy.size.width - trailingSpace))
                 }
             }
             .padding(.horizontal, 16)
@@ -131,9 +173,10 @@ struct Carousel<Content: View, T: Identifiable>: View {
     }
 }
 
-struct CardItem: Identifiable {
+struct LogItem: Identifiable {
     let id: Int
     let title: String
+    let description: String
 }
 
 #Preview {

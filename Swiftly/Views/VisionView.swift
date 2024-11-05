@@ -11,85 +11,93 @@ struct VisionView: View {
     @State private var isProcessing: Bool = false
 
     var body: some View {
-        ZStack {
-            if isProcessing {
-                ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if let score = gutHealthScore {
-                ScrollView {
-                    VStack(spacing: 24) {
-                        GutHealthGauge(score: Double(score))
+        NavigationStack {
+            ZStack {
+                if isProcessing {
+                    ProgressView("Analyzing...")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if let score = gutHealthScore {
+                    ScrollView {
+                        VStack(spacing: 24) {
+                            GutHealthGauge(score: Double(score))
 
-                        if !tips.isEmpty {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Tips")
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
+                            if !tips.isEmpty {
+                                VStack(alignment: .leading, spacing: 16) {
+                                    SharedComponents.titleWithDivider("Tips", color: .primary.opacity(0.5))
 
-                                VStack(spacing: 16) {
-                                    ForEach(tips) { tip in
-                                        VStack(alignment: .leading, spacing: 8) {
-                                            Text(tip.tip)
-                                                .font(.headline)
-                                                .fixedSize(horizontal: false, vertical: true)
-                                            Text(tip.explanation)
-                                                .font(.subheadline)
-                                                .foregroundColor(.secondary)
-                                                .fixedSize(horizontal: false, vertical: true)
+                                    VStack(spacing: 24) {
+                                        ForEach(tips) { tip in
+                                            HStack(alignment: .top, spacing: 16) {
+                                                Text(tip.emoji)
+                                                    .font(.headline)
+
+                                                VStack(alignment: .leading, spacing: 16) {
+                                                    Text(tip.tip)
+                                                        .font(.headline)
+                                                        .fixedSize(horizontal: false, vertical: true)
+
+                                                    SharedComponents.card {
+                                                        Text(tip.explanation)
+                                                            .font(.subheadline)
+                                                            .foregroundColor(.primary.opacity(0.5))
+                                                            .fixedSize(horizontal: false, vertical: true)
+                                                    }
+                                                }
+                                            }
                                         }
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .padding()
-                                        .background(Color.gray.opacity(0.1))
-                                        .cornerRadius(10)
+                                    }
+                                }
+                            }
+
+                            if !symptoms.isEmpty {
+                                VStack(alignment: .leading, spacing: 16) {
+                                    SharedComponents.titleWithDivider("Symptoms", color: .primary.opacity(0.5))
+
+                                    VStack(spacing: 24) {
+                                        ForEach(symptoms) { symptom in
+                                            HStack(alignment: .top, spacing: 16) {
+                                                Text(symptom.emoji)
+                                                    .font(.headline)
+
+                                                VStack(alignment: .leading, spacing: 16) {
+                                                    Text(symptom.symptom)
+                                                        .font(.headline)
+                                                        .fixedSize(horizontal: false, vertical: true)
+
+                                                    SharedComponents.card {
+                                                        Text(symptom.explanation)
+                                                            .font(.subheadline)
+                                                            .foregroundColor(.primary.opacity(0.5))
+                                                            .fixedSize(horizontal: false, vertical: true)
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
-
-                        if !symptoms.isEmpty {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Symptoms")
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-
-                                VStack(spacing: 16) {
-                                    ForEach(symptoms) { symptom in
-                                        VStack(alignment: .leading, spacing: 8) {
-                                            Text(symptom.symptom)
-                                                .font(.headline)
-                                                .fixedSize(horizontal: false, vertical: true)
-                                            Text(symptom.explanation)
-                                                .font(.subheadline)
-                                                .foregroundColor(.secondary)
-                                                .fixedSize(horizontal: false, vertical: true)
-                                        }
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .padding()
-                                        .background(Color.gray.opacity(0.1))
-                                        .cornerRadius(10)
-                                    }
-                                }
-                            }
+                        .padding()
+                    }
+                } else {
+                    VStack {
+                        Spacer()
+                        SharedComponents.roundButton(title: "Upload Food/Drink") {
+                            showImagePicker.toggle()
                         }
+                        .padding(.horizontal)
+                        Spacer()
                     }
-                    .padding()
-                }
-            } else {
-                VStack {
-                    Spacer()
-                    SharedComponents.roundButton(title: "Upload Food/Drink") {
-                        showImagePicker = true
-                    }
-                    .padding(.horizontal)
-                    Spacer()
                 }
             }
-        }
-        .sheet(isPresented: $showImagePicker) {
-            ImagePicker(selectedImage: $inputImage, sourceType: .photoLibrary)
-        }
-        .onChange(of: inputImage) { _ in
-            analyzeSelectedImage()
+            .navigationTitle("Gut Score")
+            .navigationBarTitleDisplayMode(.inline)
+            .sheet(isPresented: $showImagePicker) {
+                ImagePicker(selectedImage: $inputImage, sourceType: .photoLibrary)
+            }
+            .onChange(of: inputImage) { _ in
+                analyzeSelectedImage()
+            }
         }
     }
 
@@ -123,20 +131,23 @@ struct VisionView: View {
         let id = UUID()
         let tip: String
         let explanation: String
+        let emoji: String
     }
 
     struct Symptom: Identifiable {
         let id = UUID()
         let symptom: String
         let explanation: String
+        let emoji: String
     }
 
     private func parseTips(_ tipsData: [[String: Any]]) -> [Tip] {
         tipsData.compactMap { dict in
             if let tip = dict["tip"] as? String,
-               let explanation = dict["explanation"] as? String
+               let explanation = dict["explanation"] as? String,
+               let emoji = dict["emoji"] as? String
             {
-                return Tip(tip: tip, explanation: explanation)
+                return Tip(tip: tip, explanation: explanation, emoji: emoji)
             }
             return nil
         }
@@ -145,9 +156,10 @@ struct VisionView: View {
     private func parseSymptoms(_ symptomsData: [[String: Any]]) -> [Symptom] {
         symptomsData.compactMap { dict in
             if let symptom = dict["symptom"] as? String,
-               let explanation = dict["explanation"] as? String
+               let explanation = dict["explanation"] as? String,
+               let emoji = dict["emoji"] as? String
             {
-                return Symptom(symptom: symptom, explanation: explanation)
+                return Symptom(symptom: symptom, explanation: explanation, emoji: emoji)
             }
             return nil
         }
@@ -287,7 +299,7 @@ struct GutHealthGauge: View {
                     .animation(.easeIn.delay(1.2), value: showLabel)
             }
         }
-        .padding()
+        // .padding()
         .onAppear {
             startAnimationSequence()
         }
