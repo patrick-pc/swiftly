@@ -33,11 +33,11 @@ struct OnboardingView: View {
                 Text("Continue")
                     .font(.headline)
                     .fontWeight(.medium)
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.black)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
                     .padding(.horizontal, 32)
-                    .background(Color.gray.opacity(0.1))
+                    .background(Color.white)
                     .cornerRadius(24)
             }
         }

@@ -15,6 +15,7 @@
 		7947FFA22CD6D29200955F69 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 7947FFA12CD6D29200955F69 /* Lottie */; };
 		7947FFA62CDAA67800955F69 /* MoodView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7947FFA52CDAA67800955F69 /* MoodView.swift */; };
 		7947FFA82CDAB4E000955F69 /* SymptomsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7947FFA72CDAB4E000955F69 /* SymptomsView.swift */; };
+		7947FFAA2CDAB7BC00955F69 /* StressLevelsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7947FFA92CDAB7BC00955F69 /* StressLevelsView.swift */; };
 		797AD5EE2CCF2BE500B37309 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 797AD5ED2CCF2BE500B37309 /* RevenueCat */; };
 		797AD5F02CCF2BE500B37309 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 797AD5EF2CCF2BE500B37309 /* RevenueCatUI */; };
 		797AD5F32CCF2F0E00B37309 /* SuperwallKit in Frameworks */ = {isa = PBXBuildFile; productRef = 797AD5F22CCF2F0E00B37309 /* SuperwallKit */; };
@@ -78,6 +79,7 @@
 		7947FF9E2CD6D20900955F69 /* LottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottieView.swift; sourceTree = "<group>"; };
 		7947FFA52CDAA67800955F69 /* MoodView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodView.swift; sourceTree = "<group>"; };
 		7947FFA72CDAB4E000955F69 /* SymptomsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SymptomsView.swift; sourceTree = "<group>"; };
+		7947FFA92CDAB7BC00955F69 /* StressLevelsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StressLevelsView.swift; sourceTree = "<group>"; };
 		797AD5F42CCF325800B37309 /* RCPurchaseController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RCPurchaseController.swift; sourceTree = "<group>"; };
 		797AD5F62CCF371B00B37309 /* SyncedProducts.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = SyncedProducts.storekit; sourceTree = "<group>"; };
 		797AD5FC2CD0136400B37309 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
@@ -221,6 +223,7 @@
 				7947FF9E2CD6D20900955F69 /* LottieView.swift */,
 				7947FFA52CDAA67800955F69 /* MoodView.swift */,
 				7947FFA72CDAB4E000955F69 /* SymptomsView.swift */,
+				7947FFA92CDAB7BC00955F69 /* StressLevelsView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -397,6 +400,7 @@
 				794232D62CD2A937007D143B /* ChatView.swift in Sources */,
 				797AD60E2CD1C39E00B37309 /* Theme.swift in Sources */,
 				7981A04E2CCC755400CA71D4 /* FirebaseService.swift in Sources */,
+				7947FFAA2CDAB7BC00955F69 /* StressLevelsView.swift in Sources */,
 				797AD6062CD03F6200B37309 /* ItemView.swift in Sources */,
 				7981A02C2CCC747100CA71D4 /* SwiftlyApp.swift in Sources */,
 				7981A0402CCC750900CA71D4 /* AuthView.swift in Sources */,
