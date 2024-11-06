@@ -16,6 +16,7 @@ struct HomeView: View {
     @State private var showMoodView = false
     @State private var showSymptomsView = false
     @State private var showStressLevelsView = false
+    @State private var showStoolView = false
 
     var body: some View {
         NavigationStack {
@@ -25,7 +26,7 @@ struct HomeView: View {
                     .frame(width: 40, height: 40)
                     .padding(.vertical, 24)
 
-                Text("Today")
+                Text("Check In")
                     .font(.headline)
                     .fontWeight(.medium)
 
@@ -56,6 +57,8 @@ struct HomeView: View {
                             showSymptomsView.toggle()
                         } else if item.id == 4 {
                             showStressLevelsView.toggle()
+                        } else if item.id == 5 {
+                            showStoolView.toggle()
                         }
                     }
                 }
@@ -151,6 +154,20 @@ struct HomeView: View {
                         .toolbar {
                             ToolbarItem(placement: .principal) {
                                 Text("Stress & Anxiety Log")
+                                    .font(.title3)
+                                    .fontWeight(.semibold)
+                                    .fontDesign(.rounded)
+                            }
+                        }
+                }
+            }
+            .sheet(isPresented: $showStoolView) {
+                NavigationStack {
+                    StoolView()
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .principal) {
+                                Text("Stool Log")
                                     .font(.title3)
                                     .fontWeight(.semibold)
                                     .fontDesign(.rounded)
