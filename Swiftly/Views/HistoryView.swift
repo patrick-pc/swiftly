@@ -3,10 +3,7 @@ import SwiftUI
 struct HistoryView: View {
     @StateObject private var mainVM = MainViewModel()
 
-    @State private var showUpsertItemSheet = false
-    @State private var itemTitle = ""
-    @State private var itemDescription = ""
-    @State private var selectedItem: Item?
+    @State private var selectedLog: Log?
 
     // Add stool types data
     let stoolTypes: [StoolType] = [
@@ -100,6 +97,10 @@ struct HistoryView: View {
                                             }
                                         }
                                     }
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        selectedLog = log
+                                    }
                                 }
                             }
                             .padding(.top)
@@ -108,67 +109,21 @@ struct HistoryView: View {
                     }
                 }
             }
-            // .navigationBarTitleDisplayMode(.inline)
-            // .toolbar {
-            //     ToolbarItem(placement: .principal) {
-            //         Text("Biome")
-            //             .font(.title3)
-            //             .fontWeight(.semibold)
-            //             .fontDesign(.rounded)
-            //     }
-            //     ToolbarItem(placement: .navigationBarTrailing) {
-            //         Button(action: {
-            //             selectedItem = nil
-            //             itemTitle = ""
-            //             itemDescription = ""
-            //             showUpsertItemSheet = true
-            //         }) {
-            //             Image(systemName: "plus")
-            //                 .fontWeight(.semibold)
-            //         }
-            //     }
-            // }
         }
-        .sheet(isPresented: $showUpsertItemSheet) {
-            upsertItemSheet
-        }
-    }
-
-    // Upsert Item Sheet
-    private var upsertItemSheet: some View {
-        NavigationStack {
-            Form {
-                TextField("Title", text: $itemTitle)
-                TextField("Description", text: $itemDescription)
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        showUpsertItemSheet = false
-                        clearItemFields()
-                    }
-                }
-                ToolbarItem(placement: .principal) {
-                    Text(selectedItem == nil ? "Add Item" : "Edit Item")
-                        .font(.headline)
-                        .fontDesign(.rounded)
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(selectedItem == nil ? "Save" : "Update") {
-                        if let item = selectedItem {
-                            var updatedItem = item
-                            updatedItem.title = itemTitle
-                            updatedItem.description = itemDescription
-                            mainVM.updateItem(updatedItem)
-                        } else {
-                            mainVM.addItem(title: itemTitle, description: itemDescription)
-                        }
-                        showUpsertItemSheet = false
-                        clearItemFields()
-                    }
-                    .disabled(itemTitle.isEmpty)
-                }
+        .sheet(item: $selectedLog) { log in
+            switch log.type {
+            case "Mood":
+                MoodView(editingLog: log)
+            case "Symptoms":
+                SymptomsView(editingLog: log)
+            case "StressLevels":
+                StressLevelsView(editingLog: log)
+            case "Stool":
+                StoolView(editingLog: log)
+            case "Meal":
+                VisionView(editingLog: log)
+            default:
+                Text("Unsupported log type: \(log.type)")
             }
         }
     }
@@ -178,13 +133,6 @@ struct HistoryView: View {
         offsets.map { mainVM.items[$0] }.forEach { item in
             mainVM.deleteItem(item)
         }
-    }
-
-    // Helper Methods
-    private func clearItemFields() {
-        itemTitle = ""
-        itemDescription = ""
-        selectedItem = nil
     }
 
     private func formattedDate(_ date: Date) -> String {

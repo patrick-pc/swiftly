@@ -106,74 +106,79 @@ struct HomeView: View {
                 // .padding(.horizontal)
             }
             .sheet(isPresented: $showFoodView) {
-                NavigationStack {
-                    VisionView()
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .principal) {
-                                Text("Meal Log")
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-                                    .fontDesign(.rounded)
-                            }
-                        }
-                }
+                VisionView()
+                // NavigationStack {
+                //     VisionView()
+                //         .navigationBarTitleDisplayMode(.inline)
+                //         .toolbar {
+                //             ToolbarItem(placement: .principal) {
+                //                 Text("Meal Log")
+                //                     .font(.title3)
+                //                     .fontWeight(.semibold)
+                //                     .fontDesign(.rounded)
+                //             }
+                //         }
+                // }
             }
             .sheet(isPresented: $showMoodView) {
-                NavigationStack {
-                    MoodView()
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .principal) {
-                                Text("Mood Log")
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-                                    .fontDesign(.rounded)
-                            }
-                        }
-                }
+                MoodView()
+                // NavigationStack {
+                //     MoodView()
+                //         .navigationBarTitleDisplayMode(.inline)
+                //         .toolbar {
+                //             ToolbarItem(placement: .principal) {
+                //                 Text("Mood Log")
+                //                     .font(.title3)
+                //                     .fontWeight(.semibold)
+                //                     .fontDesign(.rounded)
+                //             }
+                //         }
+                // }
             }
             .sheet(isPresented: $showSymptomsView) {
-                NavigationStack {
-                    SymptomsView()
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .principal) {
-                                Text("Symptoms Log")
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-                                    .fontDesign(.rounded)
-                            }
-                        }
-                }
+                SymptomsView()
+                // NavigationStack {
+                //     SymptomsView()
+                //         .navigationBarTitleDisplayMode(.inline)
+                //         .toolbar {
+                //             ToolbarItem(placement: .principal) {
+                //                 Text("Symptoms Log")
+                //                     .font(.title3)
+                //                     .fontWeight(.semibold)
+                //                     .fontDesign(.rounded)
+                //             }
+                //         }
+                // }
             }
             .sheet(isPresented: $showStressLevelsView) {
-                NavigationStack {
-                    StressLevelsView()
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .principal) {
-                                Text("Stress & Anxiety Log")
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-                                    .fontDesign(.rounded)
-                            }
-                        }
-                }
+                StressLevelsView()
+                // NavigationStack {
+                //     StressLevelsView()
+                //         .navigationBarTitleDisplayMode(.inline)
+                //         .toolbar {
+                //             ToolbarItem(placement: .principal) {
+                //                 Text("Stress & Anxiety Log")
+                //                     .font(.title3)
+                //                     .fontWeight(.semibold)
+                //                     .fontDesign(.rounded)
+                //             }
+                //         }
+                // }
             }
             .sheet(isPresented: $showStoolView) {
-                NavigationStack {
-                    StoolView()
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .principal) {
-                                Text("Stool Log")
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-                                    .fontDesign(.rounded)
-                            }
-                        }
-                }
+                StoolView()
+                // NavigationStack {
+                //     StoolView()
+                //         .navigationBarTitleDisplayMode(.inline)
+                //         .toolbar {
+                //             ToolbarItem(placement: .principal) {
+                //                 Text("Stool Log")
+                //                     .font(.title3)
+                //                     .fontWeight(.semibold)
+                //                     .fontDesign(.rounded)
+                //             }
+                //         }
+                // }
             }
         }
         // .padding()

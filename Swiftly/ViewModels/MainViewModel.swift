@@ -178,6 +178,29 @@ class MainViewModel: NSObject, ObservableObject {
             }
         }
     }
+
+    func updateLog(
+        id: String,
+        type: String,
+        note: String,
+        data: LogData
+    ) {
+        let documentRef = Firestore.firestore().collection("logs").document(id)
+        
+        // Only update the fields we want to change
+        let updateData: [String: Any] = [
+            "note": note,
+            "data": try? Firestore.Encoder().encode(data)
+        ]
+        
+        Task {
+            do {
+                try await documentRef.updateData(updateData)
+            } catch {
+                print("Error updating log: \(error.localizedDescription)")
+            }
+        }
+    }
 }
 
 extension MainViewModel: PurchasesDelegate {

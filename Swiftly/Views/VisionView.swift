@@ -16,6 +16,30 @@ struct VisionView: View {
     @State private var symptoms: [Symptom] = []
     @State private var isProcessing = true
     
+    var editingLog: Log?
+    
+    init(editingLog: Log? = nil) {
+        self.editingLog = editingLog
+        if let log = editingLog {
+            _mealDescription = State(initialValue: log.data.mealDescription ?? "")
+            _selectedMealType = State(initialValue: log.data.mealType)
+            _gutHealthScore = State(initialValue: log.data.gutScore)
+            if let mealTips = log.data.mealTips {
+                _tips = State(initialValue: mealTips.map { tip in
+                    Tip(tip: tip.tip, explanation: tip.explanation, emoji: "🔍") // Default emoji
+                })
+            }
+            if let mealSymptoms = log.data.mealSymptoms {
+                _symptoms = State(initialValue: mealSymptoms.map { symptom in
+                    Symptom(symptom: symptom.symptom, explanation: symptom.explanation, emoji: "⚠️") // Default emoji
+                })
+            }
+            // Show gut score immediately when editing
+            _showGutScore = State(initialValue: true)
+            _isProcessing = State(initialValue: false)
+        }
+    }
+    
     // Add a timer to keep the time updated
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
@@ -35,209 +59,220 @@ struct VisionView: View {
     }
     
     var body: some View {
-        VStack(spacing: 32) {
-            // Top buttons
-            HStack(spacing: 16) {
-                SharedComponents.card {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Date")
-                            .font(.subheadline)
-                            .foregroundStyle(.primary.opacity(0.5))
-                        
-                        Text(dateFormatter.string(from: currentDate))
-                            .font(.headline)
-                    }
-                }
-                
-                SharedComponents.card {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Time")
-                            .font(.subheadline)
-                            .foregroundStyle(.primary.opacity(0.5))
-                        
-                        Text(timeFormatter.string(from: currentDate))
-                            .font(.headline)
-                    }
-                }
-            }
-            .padding(.horizontal)
-            .padding(.top, 24)
-            .onReceive(timer) { _ in
-                currentDate = Date()
-            }
-
-            // Meal Type Toggle
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Meal Type")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-                
-                ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: 8) {
-                        ForEach(mealTypes, id: \.self) { mealType in
-                            MealTypeToggleButton(
-                                title: mealType,
-                                isSelected: selectedMealType == mealType,
-                                action: { selectedMealType = mealType }
-                            )
-                        }
-                    }
-                    .padding(.horizontal, 1)
-                }
-                .frame(height: 44, alignment: .top)
-            }
-            .padding(.horizontal)
-
-            if gutHealthScore == nil {
-                // Camera and Photos buttons
-                VStack(spacing: 12) {
-                    // Camera Button
-                    Button(action: {
-                        showImagePicker.toggle()
-                    }) {
-                        HStack {
-                            HStack(spacing: 12) {
-                                Image(systemName: "camera.fill")
-                                    .font(.headline)
-                                Text("Camera")
-                                    .font(.headline)
-                            }
-                            
-                            Spacer()
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.headline)
+        NavigationStack {
+            VStack(spacing: 32) {
+                // Top buttons
+                HStack(spacing: 16) {
+                    SharedComponents.card {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Date")
+                                .font(.subheadline)
                                 .foregroundStyle(.primary.opacity(0.5))
+                            
+                            Text(dateFormatter.string(from: currentDate))
+                                .font(.headline)
                         }
-                        .padding()
-                        .foregroundStyle(.primary)
-                        .background(.primary.opacity(0.1))
-                        .cornerRadius(64)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 64)
-                                .stroke(Color.primary.opacity(0.3), lineWidth: 1)
-                        )
                     }
                     
-                    // Photos Button
-                    Button(action: {
-                        showImagePicker.toggle()
-                    }) {
-                        HStack {
-                            HStack(spacing: 12) {
-                                Image(systemName: "photo.fill")
-                                    .font(.headline)
-                                Text("Photos")
-                                    .font(.headline)
-                            }
-                            
-                            Spacer()
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.headline)
+                    SharedComponents.card {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Time")
+                                .font(.subheadline)
                                 .foregroundStyle(.primary.opacity(0.5))
+                            
+                            Text(timeFormatter.string(from: currentDate))
+                                .font(.headline)
                         }
-                        .padding()
-                        .foregroundStyle(.primary)
-                        .background(.primary.opacity(0.1))
-                        .cornerRadius(64)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 64)
-                                .stroke(Color.primary.opacity(0.3), lineWidth: 1)
-                        )
                     }
                 }
                 .padding(.horizontal)
-            }
+                .padding(.top, 24)
+                .onReceive(timer) { _ in
+                    currentDate = Date()
+                }
 
-            // Meal Description section
-            VStack(alignment: .leading, spacing: 8) {
-                Text("What did you eat? (Optional)")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-                
-                TextField("Describe your meal", text: $mealDescription, axis: .vertical)
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.primary.opacity(0.3))
-                    .lineLimit(mealDescription.isEmpty ? 1...1 : 1...3)
-                    .textFieldStyle(.plain)
-            }
-            .padding(.horizontal)
-            
-            if let score = gutHealthScore {
-                // Gut Health Score section
+                // Meal Type Toggle
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Gut Health Score")
+                    Text("Meal Type")
                         .font(.headline)
                         .foregroundColor(.secondary)
                     
-                    Text("\(score)/100")
-                        .font(.title)
-                        .fontWeight(.semibold)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        LazyHStack(spacing: 8) {
+                            ForEach(mealTypes, id: \.self) { mealType in
+                                MealTypeToggleButton(
+                                    title: mealType,
+                                    isSelected: selectedMealType == mealType,
+                                    action: { selectedMealType = mealType }
+                                )
+                            }
+                        }
+                        .padding(.horizontal, 1)
+                    }
+                    .frame(height: 44, alignment: .top)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal)
+
+                if gutHealthScore == nil {
+                    // Camera and Photos buttons
+                    VStack(spacing: 12) {
+                        // Camera Button
+                        Button(action: {
+                            showImagePicker.toggle()
+                        }) {
+                            HStack {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "camera.fill")
+                                        .font(.headline)
+                                    Text("Camera")
+                                        .font(.headline)
+                                }
+                                
+                                Spacer()
+                                
+                                Image(systemName: "chevron.right")
+                                    .font(.headline)
+                                    .foregroundStyle(.primary.opacity(0.5))
+                            }
+                            .padding()
+                            .foregroundStyle(.primary)
+                            .background(.primary.opacity(0.1))
+                            .cornerRadius(64)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 64)
+                                    .stroke(Color.primary.opacity(0.3), lineWidth: 1)
+                            )
+                        }
+                        
+                        // Photos Button
+                        Button(action: {
+                            showImagePicker.toggle()
+                        }) {
+                            HStack {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "photo.fill")
+                                        .font(.headline)
+                                    Text("Photos")
+                                        .font(.headline)
+                                }
+                                
+                                Spacer()
+                                
+                                Image(systemName: "chevron.right")
+                                    .font(.headline)
+                                    .foregroundStyle(.primary.opacity(0.5))
+                            }
+                            .padding()
+                            .foregroundStyle(.primary)
+                            .background(.primary.opacity(0.1))
+                            .cornerRadius(64)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 64)
+                                    .stroke(Color.primary.opacity(0.3), lineWidth: 1)
+                            )
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+
+                // Meal Description section
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("What did you eat? (Optional)")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                    
+                    TextField("Describe your meal", text: $mealDescription, axis: .vertical)
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.primary.opacity(0.3))
+                        .lineLimit(mealDescription.isEmpty ? 1...1 : 1...3)
+                        .textFieldStyle(.plain)
+                }
                 .padding(.horizontal)
                 
-                Spacer()
-                
-                // Done button
-                Button(action: {
-                    saveMealLog()
-                }) {
-                    Text("Done")
+                if let score = gutHealthScore {
+                    // Gut Health Score section
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Gut Health Score")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        
+                        Text("\(score)/100")
+                            .font(.title)
+                            .fontWeight(.semibold)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal)
+                    
+                    Spacer()
+                    
+                    // Done button
+                    Button(action: {
+                        saveMealLog()
+                    }) {
+                        Text("Done")
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding()
+                            .background(selectedMealType != nil ? Color.primary : Color.primary.opacity(0.3))
+                            .foregroundStyle(.background)
+                            .cornerRadius(64)
+                    }
+                    .disabled(selectedMealType == nil)
+                    .padding(.horizontal)
+                    .padding(.bottom)
+                } else {
+                    Spacer()
+                    
+                    Button(action: {
+                        isProcessing = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            showGutScore = true
+                            analyzeSelectedImage()
+                        }
+                    }) {
+                        Text("Analyze")
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding()
+                            .background(!mealDescription.isEmpty ? Color.primary : Color.primary.opacity(0.3))
+                            .foregroundStyle(.background)
+                            .cornerRadius(64)
+                    }
+                    .disabled(mealDescription.isEmpty)
+                    .padding(.horizontal)
+                    .padding(.bottom)
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text(editingLog != nil ? "Edit Meal" : "Meal Log")
                         .font(.title3)
                         .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding()
-                        .background(selectedMealType != nil ? Color.primary : Color.primary.opacity(0.3))
-                        .foregroundStyle(.background)
-                        .cornerRadius(64)
+                        .fontDesign(.rounded)
                 }
-                .disabled(selectedMealType == nil)
-                .padding(.horizontal)
-                .padding(.bottom)
-            } else {
-                Spacer()
-                
-                Button(action: {
+            }
+            .sheet(isPresented: $showImagePicker) {
+                ImagePicker(selectedImage: $inputImage, sourceType: .photoLibrary)
+            }
+            .sheet(isPresented: $showGutScore) {
+                GutScoreView(
+                    isProcessing: isProcessing,
+                    gutHealthScore: gutHealthScore,
+                    tips: tips,
+                    symptoms: symptoms
+                )
+            }
+            .onChange(of: inputImage) { _ in
+                if let _ = inputImage {
                     isProcessing = true
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         showGutScore = true
                         analyzeSelectedImage()
                     }
-                }) {
-                    Text("Analyze")
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding()
-                        .background(!mealDescription.isEmpty ? Color.primary : Color.primary.opacity(0.3))
-                        .foregroundStyle(.background)
-                        .cornerRadius(64)
-                }
-                .disabled(mealDescription.isEmpty)
-                .padding(.horizontal)
-                .padding(.bottom)
-            }
-        }
-        .sheet(isPresented: $showImagePicker) {
-            ImagePicker(selectedImage: $inputImage, sourceType: .photoLibrary)
-        }
-        .sheet(isPresented: $showGutScore) {
-            GutScoreView(
-                isProcessing: isProcessing,
-                gutHealthScore: gutHealthScore,
-                tips: tips,
-                symptoms: symptoms
-            )
-        }
-        .onChange(of: inputImage) { _ in
-            if let _ = inputImage {
-                isProcessing = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    showGutScore = true
-                    analyzeSelectedImage()
                 }
             }
         }
@@ -266,11 +301,20 @@ struct VisionView: View {
             mealSymptoms: symptomDataArray
         )
         
-        mainVM.addLog(
-            type: "Meal",
-            note: "", // Empty string for now
-            data: logData
-        )
+        if let editingLog = editingLog {
+            mainVM.updateLog(
+                id: editingLog.id,
+                type: "Meal",
+                note: "",
+                data: logData
+            )
+        } else {
+            mainVM.addLog(
+                type: "Meal",
+                note: "",
+                data: logData
+            )
+        }
         
         dismiss()
     }

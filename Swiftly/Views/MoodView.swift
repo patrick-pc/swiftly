@@ -7,6 +7,21 @@ struct MoodView: View {
     @State private var currentDate = Date()
     @State private var noteText: String = ""
 
+    var editingLog: Log?
+
+    init(editingLog: Log? = nil) {
+        self.editingLog = editingLog
+        if let log = editingLog,
+           let mood = log.data.mood {
+            // Extract mood text without emoji
+            let components = mood.components(separatedBy: " ")
+            if components.count > 1 {
+                _selectedMood = State(initialValue: components[1])
+            }
+            _noteText = State(initialValue: log.note)
+        }
+    }
+
     // Add a timer to keep the time updated
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -41,94 +56,105 @@ struct MoodView: View {
     ]
 
     var body: some View {
-        VStack(spacing: 32) {
-            // Top buttons
-            HStack(spacing: 16) {
-                SharedComponents.card {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Date")
-                            .font(.subheadline)
-                            .foregroundStyle(.primary.opacity(0.5))
+        NavigationStack {
+            VStack(spacing: 32) {
+                // Top buttons
+                HStack(spacing: 16) {
+                    SharedComponents.card {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Date")
+                                .font(.subheadline)
+                                .foregroundStyle(.primary.opacity(0.5))
 
-                        Text(dateFormatter.string(from: currentDate))
-                            .font(.headline)
-                    }
-                }
-
-                SharedComponents.card {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Time")
-                            .font(.subheadline)
-                            .foregroundStyle(.primary.opacity(0.5))
-
-                        Text(timeFormatter.string(from: currentDate))
-                            .font(.headline)
-                    }
-                }
-            }
-            .padding(.horizontal)
-            .padding(.top, 24)
-            // Add the timer to update currentDate
-            .onReceive(timer) { _ in
-                currentDate = Date()
-            }
-
-            // Mood section
-            VStack(alignment: .leading, spacing: 8) {
-                Text("How are you feeling?")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-
-                ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: 8) {
-                        ForEach(moods, id: \.0) { mood in
-                            MoodToggleButton(
-                                title: mood.0,
-                                emoji: mood.1,
-                                isSelected: selectedMood == mood.0,
-                                action: { selectedMood = mood.0 }
-                            )
+                            Text(dateFormatter.string(from: currentDate))
+                                .font(.headline)
                         }
                     }
-                    .padding(.horizontal, 1)
+
+                    SharedComponents.card {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Time")
+                                .font(.subheadline)
+                                .foregroundStyle(.primary.opacity(0.5))
+
+                            Text(timeFormatter.string(from: currentDate))
+                                .font(.headline)
+                        }
+                    }
                 }
-                .frame(height: 44, alignment: .top)
+                .padding(.horizontal)
+                .padding(.top, 24)
+                // Add the timer to update currentDate
+                .onReceive(timer) { _ in
+                    currentDate = Date()
+                }
+
+                // Mood section
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("How are you feeling?")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        LazyHStack(spacing: 8) {
+                            ForEach(moods, id: \.0) { mood in
+                                MoodToggleButton(
+                                    title: mood.0,
+                                    emoji: mood.1,
+                                    isSelected: selectedMood == mood.0,
+                                    action: { selectedMood = mood.0 }
+                                )
+                            }
+                        }
+                        .padding(.horizontal, 1)
+                    }
+                    .frame(height: 44, alignment: .top)
+                }
+                .padding(.horizontal)
+
+                // Notes section
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Attach a note")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+
+                    TextField("Tap here to write", text: $noteText, axis: .vertical)
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.primary.opacity(0.3))
+                        .lineLimit(4 ... 6)
+                        .textFieldStyle(.plain)
+                }
+                .padding(.horizontal)
+
+                Spacer()
+
+                // Done button
+                Button(action: {
+                    saveMoodLog()
+                }) {
+                    Text("Done")
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding()
+                        .background(selectedMood != nil ? Color.primary : Color.primary.opacity(0.3))
+                        .foregroundStyle(.background)
+                        .cornerRadius(64)
+                }
+                .disabled(selectedMood == nil)
+                .padding(.horizontal)
+                .padding(.bottom)
             }
-            .padding(.horizontal)
-
-            // Notes section
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Attach a note")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-
-                TextField("Tap here to write", text: $noteText, axis: .vertical)
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.primary.opacity(0.3))
-                    .lineLimit(4 ... 6)
-                    .textFieldStyle(.plain)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text(editingLog != nil ? "Edit Mood" : "Mood Log")
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .fontDesign(.rounded)
+                }
             }
-            .padding(.horizontal)
-
-            Spacer()
-
-            // Done button
-            Button(action: {
-                saveMoodLog()
-            }) {
-                Text("Done")
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding()
-                    .background(selectedMood != nil ? Color.primary : Color.primary.opacity(0.3))
-                    .foregroundStyle(.background)
-                    .cornerRadius(64)
-            }
-            .disabled(selectedMood == nil)
-            .padding(.horizontal)
-            .padding(.bottom)
         }
     }
 
@@ -140,11 +166,22 @@ struct MoodView: View {
             mood: "\(moodData.1) \(moodData.0)"
         )
         
-        mainVM.addLog(
-            type: "Mood",
-            note: noteText,
-            data: logData
-        )
+        if let editingLog = editingLog {
+            // Update existing log
+            mainVM.updateLog(
+                id: editingLog.id,
+                type: "Mood",
+                note: noteText,
+                data: logData
+            )
+        } else {
+            // Create new log
+            mainVM.addLog(
+                type: "Mood",
+                note: noteText,
+                data: logData
+            )
+        }
         
         dismiss()
     }

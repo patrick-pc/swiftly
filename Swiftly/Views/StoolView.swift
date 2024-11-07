@@ -25,6 +25,21 @@ struct StoolView: View {
     @State private var currentDate = Date()
     @State private var noteText: String = ""
     
+    var editingLog: Log?
+    
+    init(editingLog: Log? = nil) {
+        self.editingLog = editingLog
+        if let log = editingLog {
+            _noteText = State(initialValue: log.note)
+            if let stoolType = log.data.stoolType {
+                _selectedStoolType = State(initialValue: stoolType)
+            }
+            if let color = log.data.stoolColor {
+                _selectedColor = State(initialValue: color)
+            }
+        }
+    }
+    
     // Add stool types data
     let stoolTypes: [StoolType] = [
         StoolType(id: 1, title: "Type 1", condition: "Severe Constipation", description: "Separate small and hard lumps", shape: "Pebble", image: "🫘"),
@@ -63,145 +78,156 @@ struct StoolView: View {
     }
 
     var body: some View {
-        VStack(spacing: 32) {
-            // Top buttons
-            HStack(spacing: 16) {
-                SharedComponents.card {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Date")
-                            .font(.subheadline)
-                            .foregroundStyle(.primary.opacity(0.5))
+        NavigationStack {
+            VStack(spacing: 32) {
+                // Top buttons
+                HStack(spacing: 16) {
+                    SharedComponents.card {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Date")
+                                .font(.subheadline)
+                                .foregroundStyle(.primary.opacity(0.5))
 
-                        Text(dateFormatter.string(from: currentDate))
-                            .font(.headline)
-                    }
-                }
-
-                SharedComponents.card {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Time")
-                            .font(.subheadline)
-                            .foregroundStyle(.primary.opacity(0.5))
-
-                        Text(timeFormatter.string(from: currentDate))
-                            .font(.headline)
-                    }
-                }
-            }
-            .padding(.horizontal)
-            .padding(.top, 24)
-            // Add the timer to update currentDate
-            .onReceive(timer) { _ in
-                currentDate = Date()
-            }
-
-            // Add Stool section
-            VStack(alignment: .leading, spacing: 8) {
-                Text("How was your poop?")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-
-                ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: 8) {
-                        ForEach(stoolTypes) { stoolType in
-                            StoolToggleButton(
-                                image: stoolType.image,
-                                shape: stoolType.shape,
-                                condition: stoolType.condition,
-                                isSelected: selectedStoolType == stoolType.id,
-                                action: { selectedStoolType = stoolType.id }
-                            )
+                            Text(dateFormatter.string(from: currentDate))
+                                .font(.headline)
                         }
                     }
-                    .padding(.horizontal, 1)
-                }
-                .frame(height: 44, alignment: .top)
-            }
-            .padding(.horizontal)
 
-            // Color section
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("Color")
+                    SharedComponents.card {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Time")
+                                .font(.subheadline)
+                                .foregroundStyle(.primary.opacity(0.5))
+
+                            Text(timeFormatter.string(from: currentDate))
+                                .font(.headline)
+                        }
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top, 24)
+                // Add the timer to update currentDate
+                .onReceive(timer) { _ in
+                    currentDate = Date()
+                }
+
+                // Add Stool section
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("How was your poop?")
                         .font(.headline)
                         .foregroundColor(.secondary)
 
-                    Spacer()
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        LazyHStack(spacing: 8) {
+                            ForEach(stoolTypes) { stoolType in
+                                StoolToggleButton(
+                                    image: stoolType.image,
+                                    shape: stoolType.shape,
+                                    condition: stoolType.condition,
+                                    isSelected: selectedStoolType == stoolType.id,
+                                    action: { selectedStoolType = stoolType.id }
+                                )
+                            }
+                        }
+                        .padding(.horizontal, 1)
+                    }
+                    .frame(height: 44, alignment: .top)
+                }
+                .padding(.horizontal)
 
-                    if let selectedColor = selectedColor,
-                       let color = stoolColors.first(where: { $0.id == selectedColor }) {
-                        Text(color.name)
-                            .font(.subheadline)
+                // Color section
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Color")
+                            .font(.headline)
                             .foregroundColor(.secondary)
-                    }
-                }
 
-                HStack {
-                    ForEach(stoolColors) { stoolColor in
-                        Button(action: {
-                            selectedColor = stoolColor.id
-                        }) {
-                            Circle()
-                                .fill(stoolColor.color)
-                                .frame(width: 32, height: 32)
-                                .overlay(
-                                    Circle()
-                                        .strokeBorder(
-                                            selectedColor == stoolColor.id ? 
-                                                Color.primary : Color.clear,
-                                            lineWidth: 2
-                                        )
-                                )
-                                .shadow(
-                                    color: Color.black.opacity(0.1),
-                                    radius: 2,
-                                    x: 0,
-                                    y: 1
-                                )
-                        }
-                        
-                        if stoolColor.id != stoolColors.last?.id {
-                            Spacer()
+                        Spacer()
+
+                        if let selectedColor = selectedColor,
+                           let color = stoolColors.first(where: { $0.id == selectedColor }) {
+                            Text(color.name)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
                         }
                     }
+
+                    HStack {
+                        ForEach(stoolColors) { stoolColor in
+                            Button(action: {
+                                selectedColor = stoolColor.id
+                            }) {
+                                Circle()
+                                    .fill(stoolColor.color)
+                                    .frame(width: 32, height: 32)
+                                    .overlay(
+                                        Circle()
+                                            .strokeBorder(
+                                                selectedColor == stoolColor.id ? 
+                                                    Color.primary : Color.clear,
+                                                lineWidth: 2
+                                            )
+                                    )
+                                    .shadow(
+                                        color: Color.black.opacity(0.1),
+                                        radius: 2,
+                                        x: 0,
+                                        y: 1
+                                    )
+                            }
+                            
+                            if stoolColor.id != stoolColors.last?.id {
+                                Spacer()
+                            }
+                        }
+                    }
+                    .frame(height: 44)
                 }
-                .frame(height: 44)
+                .padding(.horizontal)
+
+                // Notes section
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Attach a note")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+
+                    TextField("Tap here to write", text: $noteText, axis: .vertical)
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.primary.opacity(0.3))
+                        .lineLimit(4 ... 6)
+                        .textFieldStyle(.plain)
+                }
+                .padding(.horizontal)
+
+                Spacer()
+
+                // Done button
+                Button(action: {
+                    saveStoolLog()
+                }) {
+                    Text("Done")
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding()
+                        .background(selectedStoolType != nil && selectedColor != nil ? Color.primary : Color.primary.opacity(0.3))
+                        .foregroundStyle(.background)
+                        .cornerRadius(64)
+                }
+                .disabled(selectedStoolType == nil || selectedColor == nil)
+                .padding(.horizontal)
+                .padding(.bottom)
             }
-            .padding(.horizontal)
-
-            // Notes section
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Attach a note")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-
-                TextField("Tap here to write", text: $noteText, axis: .vertical)
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.primary.opacity(0.3))
-                    .lineLimit(4 ... 6)
-                    .textFieldStyle(.plain)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text(editingLog != nil ? "Edit Stool" : "Stool Log")
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .fontDesign(.rounded)
+                }
             }
-            .padding(.horizontal)
-
-            Spacer()
-
-            // Done button
-            Button(action: {
-                saveStoolLog()
-            }) {
-                Text("Done")
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding()
-                    .background(selectedStoolType != nil && selectedColor != nil ? Color.primary : Color.primary.opacity(0.3))
-                    .foregroundStyle(.background)
-                    .cornerRadius(64)
-            }
-            .disabled(selectedStoolType == nil || selectedColor == nil)
-            .padding(.horizontal)
-            .padding(.bottom)
         }
     }
 
@@ -211,11 +237,20 @@ struct StoolView: View {
             stoolColor: selectedColor
         )
         
-        mainVM.addLog(
-            type: "Stool",
-            note: noteText,
-            data: logData
-        )
+        if let editingLog = editingLog {
+            mainVM.updateLog(
+                id: editingLog.id,
+                type: "Stool",
+                note: noteText,
+                data: logData
+            )
+        } else {
+            mainVM.addLog(
+                type: "Stool",
+                note: noteText,
+                data: logData
+            )
+        }
         
         dismiss()
     }
