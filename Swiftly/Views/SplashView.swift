@@ -20,6 +20,7 @@ struct SplashView: View {
             }
             .font(.title3)
             .fontWeight(.medium)
+            .fontDesign(.rounded)
         }
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {

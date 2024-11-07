@@ -39,7 +39,7 @@ struct MoodView: View {
     ]
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 32) {
             // Top buttons
             HStack(spacing: 16) {
                 SharedComponents.card {

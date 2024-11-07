@@ -70,6 +70,7 @@
 		7981A0812CCC80FA00CA71D4 /* MainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7981A0802CCC80FA00CA71D4 /* MainViewModel.swift */; };
 		7981A0852CCC9D1400CA71D4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7981A0842CCC9D1400CA71D4 /* GoogleService-Info.plist */; };
 		7983BC512CCDAA180038CD8A /* BottomNavigationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7983BC502CCDAA180038CD8A /* BottomNavigationView.swift */; };
+		79B83AC72CDC3CAA0014FD78 /* GutScoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B83AC62CDC3CAA0014FD78 /* GutScoreView.swift */; };
 		79F4F5DC2CD44FCA00E1E8C5 /* ArticleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79F4F5DB2CD44FCA00E1E8C5 /* ArticleView.swift */; };
 /* End PBXBuildFile section */
 
@@ -111,6 +112,7 @@
 		7981A0842CCC9D1400CA71D4 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../Downloads/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		7981A0862CCC9EC900CA71D4 /* Swiftly.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Swiftly.entitlements; sourceTree = "<group>"; };
 		7983BC502CCDAA180038CD8A /* BottomNavigationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomNavigationView.swift; sourceTree = "<group>"; };
+		79B83AC62CDC3CAA0014FD78 /* GutScoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GutScoreView.swift; sourceTree = "<group>"; };
 		79F4F5DB2CD44FCA00E1E8C5 /* ArticleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArticleView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -227,6 +229,7 @@
 				7947FFA72CDAB4E000955F69 /* SymptomsView.swift */,
 				7947FFA92CDAB7BC00955F69 /* StressLevelsView.swift */,
 				7947FFAB2CDC066D00955F69 /* StoolView.swift */,
+				79B83AC62CDC3CAA0014FD78 /* GutScoreView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -385,6 +388,7 @@
 				79F4F5DC2CD44FCA00E1E8C5 /* ArticleView.swift in Sources */,
 				7981A02E2CCC747100CA71D4 /* ContentView.swift in Sources */,
 				797AD6042CD03F5B00B37309 /* ItemViewModel.swift in Sources */,
+				79B83AC72CDC3CAA0014FD78 /* GutScoreView.swift in Sources */,
 				7947FFA82CDAB4E000955F69 /* SymptomsView.swift in Sources */,
 				7983BC512CCDAA180038CD8A /* BottomNavigationView.swift in Sources */,
 				794232D82CD326B2007D143B /* CalendarView.swift in Sources */,
