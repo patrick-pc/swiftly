@@ -18,6 +18,8 @@ struct StoolColor: Identifiable {
 }
 
 struct StoolView: View {
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var mainVM = MainViewModel()
     @State private var selectedStoolType: Int?
     @State private var selectedColor: String?
     @State private var currentDate = Date()
@@ -186,20 +188,36 @@ struct StoolView: View {
 
             // Done button
             Button(action: {
-                // Handle done action
+                saveStoolLog()
             }) {
                 Text("Done")
                     .font(.title3)
                     .fontWeight(.semibold)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding()
-                    .background(Color.primary)
+                    .background(selectedStoolType != nil && selectedColor != nil ? Color.primary : Color.primary.opacity(0.3))
                     .foregroundStyle(.background)
                     .cornerRadius(64)
             }
+            .disabled(selectedStoolType == nil || selectedColor == nil)
             .padding(.horizontal)
             .padding(.bottom)
         }
+    }
+
+    private func saveStoolLog() {
+        let logData = LogData(
+            stoolType: selectedStoolType,
+            stoolColor: selectedColor
+        )
+        
+        mainVM.addLog(
+            type: "Stool",
+            note: noteText,
+            data: logData
+        )
+        
+        dismiss()
     }
 }
 

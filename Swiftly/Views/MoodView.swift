@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct MoodView: View {
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var mainVM = MainViewModel()
     @State private var selectedMood: String?
     @State private var currentDate = Date()
     @State private var noteText: String = ""
@@ -113,20 +115,38 @@ struct MoodView: View {
 
             // Done button
             Button(action: {
-                // Handle done action
+                saveMoodLog()
             }) {
                 Text("Done")
                     .font(.title3)
                     .fontWeight(.semibold)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding()
-                    .background(Color.primary)
+                    .background(selectedMood != nil ? Color.primary : Color.primary.opacity(0.3))
                     .foregroundStyle(.background)
                     .cornerRadius(64)
             }
+            .disabled(selectedMood == nil)
             .padding(.horizontal)
             .padding(.bottom)
         }
+    }
+
+    private func saveMoodLog() {
+        guard let selectedMood = selectedMood,
+              let moodData = moods.first(where: { $0.0 == selectedMood }) else { return }
+              
+        let logData = LogData(
+            mood: "\(moodData.1) \(moodData.0)"
+        )
+        
+        mainVM.addLog(
+            type: "Mood",
+            note: noteText,
+            data: logData
+        )
+        
+        dismiss()
     }
 }
 

@@ -6,7 +6,7 @@ struct BottomNavigationView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             NavigationStack {
-                ItemView()
+                HistoryView()
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .principal) {

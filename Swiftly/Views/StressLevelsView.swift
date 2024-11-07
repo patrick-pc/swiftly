@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct StressLevelsView: View {
-    @State private var selectedMood: String?
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var mainVM = MainViewModel()
     @State private var currentDate = Date()
     @State private var noteText: String = ""
     @State private var stressLevel: Double = 0
@@ -62,7 +63,6 @@ struct StressLevelsView: View {
             }
             .padding(.horizontal)
             .padding(.top, 24)
-            // Add the timer to update currentDate
             .onReceive(timer) { _ in
                 currentDate = Date()
             }
@@ -123,20 +123,36 @@ struct StressLevelsView: View {
 
             // Done button
             Button(action: {
-                // Handle done action
+                saveStressLog()
             }) {
                 Text("Done")
                     .font(.title3)
                     .fontWeight(.semibold)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding()
-                    .background(Color.primary)
+                    .background(stressLevel > 0 || anxietyLevel > 0 ? Color.primary : Color.primary.opacity(0.3))
                     .foregroundStyle(.background)
                     .cornerRadius(64)
             }
+            .disabled(stressLevel == 0 && anxietyLevel == 0)
             .padding(.horizontal)
             .padding(.bottom)
         }
+    }
+
+    private func saveStressLog() {
+        let logData = LogData(
+            stressLevel: Int(stressLevel),
+            anxietyLevel: Int(anxietyLevel)
+        )
+        
+        mainVM.addLog(
+            type: "StressLevels",
+            note: noteText,
+            data: logData
+        )
+        
+        dismiss()
     }
 }
 

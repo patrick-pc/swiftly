@@ -2,6 +2,8 @@ import Foundation
 import SwiftUI
 
 struct VisionView: View {
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var mainVM = MainViewModel()
     @State private var showImagePicker = false
     @State private var inputImage: UIImage?
     @State private var currentDate = Date()
@@ -181,17 +183,18 @@ struct VisionView: View {
                 
                 // Done button
                 Button(action: {
-                    // Handle done action
+                    saveMealLog()
                 }) {
                     Text("Done")
                         .font(.title3)
                         .fontWeight(.semibold)
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding()
-                        .background(Color.primary)
+                        .background(selectedMealType != nil ? Color.primary : Color.primary.opacity(0.3))
                         .foregroundStyle(.background)
                         .cornerRadius(64)
                 }
+                .disabled(selectedMealType == nil)
                 .padding(.horizontal)
                 .padding(.bottom)
             } else {
@@ -238,6 +241,38 @@ struct VisionView: View {
                 }
             }
         }
+    }
+    
+    private func saveMealLog() {
+        let symptomDataArray = symptoms.map { symptom in
+            MealSymptomData(
+                symptom: symptom.symptom,
+                explanation: symptom.explanation
+            )
+        }
+        
+        let tipDataArray = tips.map { tip in
+            MealTipData(
+                tip: tip.tip,
+                explanation: tip.explanation
+            )
+        }
+        
+        let logData = LogData(
+            gutScore: gutHealthScore,
+            mealType: selectedMealType,
+            mealDescription: mealDescription,
+            mealTips: tipDataArray,
+            mealSymptoms: symptomDataArray
+        )
+        
+        mainVM.addLog(
+            type: "Meal",
+            note: "", // Empty string for now
+            data: logData
+        )
+        
+        dismiss()
     }
     
     private func analyzeSelectedImage() {

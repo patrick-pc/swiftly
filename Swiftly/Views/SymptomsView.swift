@@ -1,7 +1,10 @@
 import SwiftUI
 
 struct SymptomsView: View {
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var mainVM = MainViewModel()
     @State private var selectedSymptoms: Set<String> = []
+    @State private var symptomSeverities: [String: Int] = [:]
     @State private var currentDate = Date()
     @State private var noteText: String = ""
 
@@ -63,7 +66,6 @@ struct SymptomsView: View {
             }
             .padding(.horizontal)
             .padding(.top, 24)
-            // Add the timer to update currentDate
             .onReceive(timer) { _ in
                 currentDate = Date()
             }
@@ -115,20 +117,42 @@ struct SymptomsView: View {
 
             // Done button
             Button(action: {
-                // Handle done action
+                saveSymptomLog()
             }) {
                 Text("Done")
                     .font(.title3)
                     .fontWeight(.semibold)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding()
-                    .background(Color.primary)
+                    .background(!selectedSymptoms.isEmpty ? Color.primary : Color.primary.opacity(0.3))
                     .foregroundStyle(.background)
                     .cornerRadius(64)
             }
+            .disabled(selectedSymptoms.isEmpty)
             .padding(.horizontal)
             .padding(.bottom)
         }
+    }
+
+    private func saveSymptomLog() {
+        let symptomDataArray = selectedSymptoms.map { symptom in
+            UserSymptomData(
+                name: symptom,
+                severity: symptomSeverities[symptom] ?? 5
+            )
+        }
+        
+        let logData = LogData(
+            symptoms: symptomDataArray
+        )
+        
+        mainVM.addLog(
+            type: "Symptoms",
+            note: noteText,
+            data: logData
+        )
+        
+        dismiss()
     }
 }
 
