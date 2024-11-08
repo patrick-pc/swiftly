@@ -201,6 +201,17 @@ class MainViewModel: NSObject, ObservableObject {
             }
         }
     }
+
+    func deleteLog(_ log: Log) {
+        let documentRef = Firestore.firestore().collection("logs").document(log.id)
+        Task {
+            do {
+                try await documentRef.delete()
+            } catch {
+                print("Error deleting item: \(error.localizedDescription)")
+            }
+        }
+    }
 }
 
 extension MainViewModel: PurchasesDelegate {

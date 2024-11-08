@@ -2,13 +2,15 @@ import SwiftUI
 
 struct CalendarView: View {
     @Binding var selectedDate: Date
+    let logDates: Set<Date>
     @State private var currentWeekIndex: Int = 0
     private let calendar: Calendar
     private let monthFormatter: DateFormatter
     private let weekdayFormatter: DateFormatter
 
-    init(selectedDate: Binding<Date>) {
+    init(selectedDate: Binding<Date>, logDates: Set<Date> = []) {
         _selectedDate = selectedDate
+        self.logDates = logDates
 
         // Configure the calendar to start the week on Sunday
         var calendar = Calendar.current
@@ -96,6 +98,7 @@ struct CalendarView: View {
                                 baseDate: Date(),
                                 weekOffset: weekOffset,
                                 selectedDate: selectedDate,
+                                logDates: logDates,
                                 calendar: calendar,
                                 geometry: geometry,
                                 onDateSelected: { date in
@@ -121,6 +124,7 @@ struct WeekView: View {
     let baseDate: Date
     let weekOffset: Int
     let selectedDate: Date
+    let logDates: Set<Date>
     let calendar: Calendar
     let geometry: GeometryProxy
     let onDateSelected: (Date) -> Void
@@ -149,7 +153,8 @@ struct WeekView: View {
                 DateCell(
                     date: date,
                     isSelected: calendar.isDate(date, inSameDayAs: selectedDate),
-                    isPastOrToday: isPastOrToday
+                    isPastOrToday: isPastOrToday,
+                    hasLogs: logDates.contains(where: { calendar.isDate($0, inSameDayAs: date) })
                 )
                 .frame(width: geometry.size.width / 7, height: 40)
                 // Disable tap gestures for future dates
@@ -168,6 +173,7 @@ struct DateCell: View {
     let date: Date
     let isSelected: Bool
     let isPastOrToday: Bool
+    let hasLogs: Bool
 
     private let dayFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -176,21 +182,33 @@ struct DateCell: View {
     }()
 
     var body: some View {
-        Text(dayFormatter.string(from: date))
-            .font(.subheadline)
-            .fontWeight(.medium)
-            .foregroundColor(isSelected ? .black : (isPastOrToday ? .primary : .primary.opacity(0.5)))
-            .frame(width: 32, height: 32)
-            .background(
-                isSelected ?
-                    RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.primary) :
-                    nil
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+        VStack(spacing: 4) {
+            Text(dayFormatter.string(from: date))
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(isSelected ? .black : (isPastOrToday ? .primary : .primary.opacity(0.5)))
+                .frame(width: 24, height: 24)
+                .background(
+                    isSelected ?
+                        RoundedRectangle(cornerRadius: 6)
+                        .fill(Color.primary) :
+                        nil
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+            
+            if hasLogs {
+                Circle()
+                    .fill(.primary)
+                    .frame(width: 3, height: 3)
+            } else {
+                Circle()
+                    .fill(.clear)
+                    .frame(width: 3, height: 3)
+            }
+        }
     }
 }
 
 #Preview {
-    CalendarView(selectedDate: .constant(Date()))
+    CalendarView(selectedDate: .constant(Date()), logDates: Set())
 }

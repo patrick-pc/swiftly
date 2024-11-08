@@ -68,15 +68,55 @@ struct HistoryView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 // Calendar View
-                CalendarView(selectedDate: $mainVM.selectedDate)
-                    .padding(.bottom)
+                CalendarView(
+                    selectedDate: $mainVM.selectedDate,
+                    logDates: Set(mainVM.logs.map { Calendar.current.startOfDay(for: $0.createdAt.dateValue()) })
+                )
+                .padding(.bottom)
 
                 // Items List
                 VStack {
                     if mainVM.filteredLogs.isEmpty {
-                        Text("No logs for this date")
-                            .foregroundColor(.gray)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        Spacer()
+
+                        VStack(spacing: 16) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "takeoutbag.and.cup.and.straw.fill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(height: 16)
+                                    .padding(10)
+                                    .background(Circle().fill(.primary.opacity(0.1)))
+                                
+                                Image(systemName: "heart.fill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(height: 16)
+                                    .padding(10)
+                                    .background(Circle().fill(.primary.opacity(0.1)))
+
+
+                                Image(systemName: "figure.mind.and.body")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(height: 16)
+                                    .padding(10)
+                                    .background(Circle().fill(.primary.opacity(0.1)))
+                            }
+
+                            Text("It's a bit quiet in here...")
+                                .font(.headline)
+                                .foregroundColor(.primary)
+
+                            Text("You can see the daily history of all your logs here")
+                                .font(.subheadline)
+                                .foregroundColor(.primary.opacity(0.5))
+                                .frame(maxWidth: 220)
+                                .multilineTextAlignment(.center)
+                        }
+                        .frame(maxWidth: .infinity)
+                        
+                        Spacer()
                     } else {
                         ScrollView {
                             VStack(spacing: 24) {
