@@ -20,11 +20,11 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 16) {
+            VStack(spacing: 24) {
                 Circle()
                     .fill(Color.orange)
-                    .frame(width: 40, height: 40)
-                    .padding(.vertical, 24)
+                    .frame(width: 60, height: 60)
+                    .padding(.top, 60)
 
                 Text("Check In")
                     .font(.headline)

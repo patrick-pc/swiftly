@@ -186,7 +186,7 @@ struct DateCell: View {
             Text(dayFormatter.string(from: date))
                 .font(.subheadline)
                 .fontWeight(.medium)
-                .foregroundColor(isSelected ? .black : (isPastOrToday ? .primary : .primary.opacity(0.5)))
+                .foregroundColor(isSelected ? Color(uiColor: .systemBackground) : (isPastOrToday ? .primary : .primary.opacity(0.5)))
                 .frame(width: 24, height: 24)
                 .background(
                     isSelected ?

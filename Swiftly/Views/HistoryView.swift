@@ -31,10 +31,10 @@ struct HistoryView: View {
     private func formatLogDisplay(_ log: Log) -> (title: String, description: String) {
         switch log.type {
         case "Mood":
-            return ("Mood", log.data.mood ?? "")
+            return ("Mood", (log.data.mood ?? "").replacingOccurrences(of: "^[\\p{Emoji}\\s]+", with: "", options: .regularExpression))
             
         case "Meal":
-            return ("Meal", "Gut Score: \(log.data.gutScore ?? 0)/100")
+            return (log.data.mealType ?? "Meal", "Gut Score: \(log.data.gutScore ?? 0)/100")
             
         case "Symptoms":
             let symptomsText = (log.data.symptoms ?? [])
@@ -128,7 +128,8 @@ struct HistoryView: View {
                                                 .font(.caption)
                                                 .foregroundColor(.primary.opacity(0.8))
                                             Text(displayInfo.title)
-                                                .font(.title2)
+                                                // .font(.title2)
+                                                .font(.title3)
                                                 .fontWeight(.semibold)
                                             if !displayInfo.description.isEmpty {
                                                 Text(displayInfo.description)

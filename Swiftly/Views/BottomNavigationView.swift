@@ -51,7 +51,7 @@ struct BottomNavigationView: View {
             .tag(2)
 
             NavigationStack {
-                Text("Insights Here")
+                InsightsView()
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .principal) {

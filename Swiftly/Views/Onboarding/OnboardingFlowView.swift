@@ -312,7 +312,7 @@ struct JourneyScreen: View {
                                         .fill(Color.primary)
                                         .frame(height: CGFloat([140, 100, 160, 120, 180, 130, 150][index]))
                                     
-                                    Text("D\(index + 1)")
+                                    Text(["S", "M", "T", "W", "T", "F", "S"][index])
                                         .font(.caption2)
                                         .foregroundStyle(.secondary)
                                 }
@@ -923,7 +923,7 @@ struct DigestiveConditionsScreen: View {
     
     let conditions = [
         "IBS", "Celiac Disease", "Crohn's Disease",
-        "Ulcerative Colitis", "GERD", "None"
+        "Ulcerative Colitis", "GERD", "Other", "None"
     ]
     
     var body: some View {
@@ -1137,6 +1137,23 @@ struct SummaryScreen: View {
     @State private var scoreExplanation: String?
     @State private var risks: [Risk] = []
     @State private var recommendations: [Recommendation] = []
+
+    @State private var currentLoadingMessage = "Analyzing your data..."
+
+    private func startLoadingSequence() {
+        let messages = ["Analyzing your data...",
+                    "Diagnosing your gut health...",
+                    "Almost there..."]
+        
+        // Change message every 2 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            currentLoadingMessage = messages[1]
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                currentLoadingMessage = messages[2]
+            }
+        }
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -1241,7 +1258,28 @@ struct SummaryScreen: View {
             }
             .overlay {
                 if isLoading {
-                    ProgressView("Analyzing...")
+                    VStack(alignment: .center, spacing: 24) {
+                        // Use a @State variable to track the current message
+                        let messages = ["Analyzing your data...",
+                                    "Diagnosing your gut health...",
+                                    "Almost there..."]
+                        
+                        Text("We're setting up everything for you")
+                            .font(.title)
+                            .fontWeight(.semibold)
+                            .multilineTextAlignment(.center)
+
+                        Text(currentLoadingMessage)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+
+                        ProgressView()
+                    }
+                    .onAppear {
+                        // Start the sequence when the overlay appears
+                        startLoadingSequence()
+                    }
                 }
             }
 
