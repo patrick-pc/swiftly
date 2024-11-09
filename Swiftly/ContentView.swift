@@ -7,8 +7,8 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             if authVM.authState == .unauthenticated {
-                AuthView()
-                // OnboardingView()
+                // AuthView()
+                OnboardingView()
             } else {
                 BottomNavigationView()
             }

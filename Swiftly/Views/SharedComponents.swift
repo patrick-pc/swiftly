@@ -42,4 +42,16 @@ enum SharedComponents {
                 .frame(height: 1)
         }
     }
+
+    static func primaryButton(title: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.headline)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding()
+                .background(Color.primary)
+                .foregroundStyle(.background)
+                .cornerRadius(64)
+        }
+    }
 }

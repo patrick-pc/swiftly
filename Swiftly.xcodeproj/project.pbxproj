@@ -73,6 +73,7 @@
 		79B83AC72CDC3CAA0014FD78 /* GutScoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B83AC62CDC3CAA0014FD78 /* GutScoreView.swift */; };
 		79B83AC92CDD430F0014FD78 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B83AC82CDD430F0014FD78 /* HistoryView.swift */; };
 		79B83ACB2CDD45C00014FD78 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B83ACA2CDD45C00014FD78 /* Log.swift */; };
+		79B83ACE2CDD9E080014FD78 /* OnboardingFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B83ACD2CDD9E080014FD78 /* OnboardingFlowView.swift */; };
 		79F4F5DC2CD44FCA00E1E8C5 /* ArticleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79F4F5DB2CD44FCA00E1E8C5 /* ArticleView.swift */; };
 /* End PBXBuildFile section */
 
@@ -117,6 +118,7 @@
 		79B83AC62CDC3CAA0014FD78 /* GutScoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GutScoreView.swift; sourceTree = "<group>"; };
 		79B83AC82CDD430F0014FD78 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 		79B83ACA2CDD45C00014FD78 /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
+		79B83ACD2CDD9E080014FD78 /* OnboardingFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlowView.swift; sourceTree = "<group>"; };
 		79F4F5DB2CD44FCA00E1E8C5 /* ArticleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArticleView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -215,6 +217,7 @@
 		7981A0392CCC747F00CA71D4 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				79B83ACC2CDD99F70014FD78 /* Onboarding */,
 				7981A03F2CCC750900CA71D4 /* AuthView.swift */,
 				7981A0412CCC751100CA71D4 /* HomeView.swift */,
 				7981A0432CCC752100CA71D4 /* SplashView.swift */,
@@ -277,6 +280,14 @@
 				797AD60B2CD18E5300B37309 /* OpenAIService.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		79B83ACC2CDD99F70014FD78 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				79B83ACD2CDD9E080014FD78 /* OnboardingFlowView.swift */,
+			);
+			path = Onboarding;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -409,6 +420,7 @@
 				7981A0462CCC752A00CA71D4 /* SettingsView.swift in Sources */,
 				797AD5FD2CD0136400B37309 /* Constants.swift in Sources */,
 				7981A04A2CCC754200CA71D4 /* AuthViewModel.swift in Sources */,
+				79B83ACE2CDD9E080014FD78 /* OnboardingFlowView.swift in Sources */,
 				7981A04C2CCC754800CA71D4 /* User.swift in Sources */,
 				79B83ACB2CDD45C00014FD78 /* Log.swift in Sources */,
 				797AD60C2CD18E5300B37309 /* OpenAIService.swift in Sources */,

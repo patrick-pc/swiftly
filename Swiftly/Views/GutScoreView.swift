@@ -41,6 +41,36 @@ struct GutScoreView: View {
                     ScrollView {
                         VStack(spacing: 24) {
                             GutHealthGauge(score: Double(score))
+
+                            if !symptoms.isEmpty {
+                                VStack(alignment: .leading, spacing: 16) {
+                                    SharedComponents.titleWithDivider("Symptoms", color: .primary.opacity(0.5))
+                                    
+                                    VStack(spacing: 24) {
+                                        ForEach(symptoms) { symptom in
+                                            HStack(alignment: .top, spacing: 16) {
+                                                Text(symptom.emoji)
+                                                    .font(.title3)
+                                                    .fontWeight(.semibold)
+                                                
+                                                VStack(alignment: .leading, spacing: 16) {
+                                                    Text(symptom.symptom)
+                                                        .font(.title3)
+                                                        .fontWeight(.semibold)
+                                                        .fixedSize(horizontal: false, vertical: true)
+                                                    
+                                                    SharedComponents.card {
+                                                        Text(symptom.explanation)
+                                                            .font(.subheadline)
+                                                            .foregroundColor(.primary.opacity(0.5))
+                                                            .fixedSize(horizontal: false, vertical: true)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                             
                             if !tips.isEmpty {
                                 VStack(alignment: .leading, spacing: 16) {
@@ -61,36 +91,6 @@ struct GutScoreView: View {
                                                     
                                                     SharedComponents.card {
                                                         Text(tip.explanation)
-                                                            .font(.subheadline)
-                                                            .foregroundColor(.primary.opacity(0.5))
-                                                            .fixedSize(horizontal: false, vertical: true)
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            if !symptoms.isEmpty {
-                                VStack(alignment: .leading, spacing: 16) {
-                                    SharedComponents.titleWithDivider("Symptoms", color: .primary.opacity(0.5))
-                                    
-                                    VStack(spacing: 24) {
-                                        ForEach(symptoms) { symptom in
-                                            HStack(alignment: .top, spacing: 16) {
-                                                Text(symptom.emoji)
-                                                    .font(.title3)
-                                                    .fontWeight(.semibold)
-                                                
-                                                VStack(alignment: .leading, spacing: 16) {
-                                                    Text(symptom.symptom)
-                                                        .font(.title3)
-                                                        .fontWeight(.semibold)
-                                                        .fixedSize(horizontal: false, vertical: true)
-                                                    
-                                                    SharedComponents.card {
-                                                        Text(symptom.explanation)
                                                             .font(.subheadline)
                                                             .foregroundColor(.primary.opacity(0.5))
                                                             .fixedSize(horizontal: false, vertical: true)
