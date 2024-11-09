@@ -26,8 +26,8 @@ struct AuthView: View {
                     .fontWeight(.semibold)
 
                 Text("Your Path to Better Gut Health")
-                    .font(.subheadline)
-                    .foregroundStyle(.gray)
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
             }
 
             Spacer()
@@ -41,14 +41,15 @@ struct AuthView: View {
                     authVM.handleSignInWithAppleCompletion(result)
                 }
             )
+            .fontDesign(.rounded)
             .id(colorScheme == .dark ? "dark-btn" : "light-btn")
             .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
             .frame(maxWidth: .infinity)
             .frame(height: 50)
             .cornerRadius(25)
-            .padding(.bottom, 32)
+            .padding(.bottom, 24)
         }
-        .padding()
+        .padding(.horizontal)
     }
 }
 

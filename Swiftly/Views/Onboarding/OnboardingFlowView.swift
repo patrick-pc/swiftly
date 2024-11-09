@@ -39,8 +39,9 @@ extension OnboardingScreen {
         case .dietaryPreferences: return 13 / total
         case .digestiveConditions: return 14 / total
         case .goals: return 15 / total
-        case .summary: return 16 / total
-        case .auth: return 1.0
+        // case .summary: return 16 / total
+        case .summary: return 1.0
+        case .auth: return 1
         }
     }
 }
@@ -83,6 +84,7 @@ struct OnboardingFlowView: View {
         digestiveConditions: [],
         goals: []
     )
+    @State private var isSummaryLoading = true
     
     var body: some View {
         NavigationStack {
@@ -132,7 +134,11 @@ struct OnboardingFlowView: View {
                 GoalsScreen(currentScreen: $currentScreen, selections: $selections)
                     .tag(OnboardingScreen.goals)
                 
-                SummaryScreen(currentScreen: $currentScreen, selections: $selections)
+                SummaryScreen(
+                    currentScreen: $currentScreen,
+                    selections: $selections,
+                    isLoading: $isSummaryLoading
+                )
                     .tag(OnboardingScreen.summary)
                 
                 AuthView()
@@ -142,7 +148,7 @@ struct OnboardingFlowView: View {
             .interactiveDismissDisabled()
             // .simultaneousGesture(DragGesture().onChanged { _ in })
             .toolbar {
-                if currentScreen != .welcome {
+                if currentScreen != .welcome && currentScreen != .auth && !(currentScreen == .summary && isSummaryLoading) {
                     ToolbarItem(placement: .topBarLeading) {
                         Button(action: {
                             withAnimation {
@@ -917,7 +923,7 @@ struct DigestiveConditionsScreen: View {
     
     let conditions = [
         "IBS", "Celiac Disease", "Crohn's Disease",
-        "Ulcerative Colitis", "GERD"
+        "Ulcerative Colitis", "GERD", "None"
     ]
     
     var body: some View {
@@ -965,7 +971,7 @@ struct GoalsScreen: View {
     var body: some View {
         OnboardingContainerView(
             title: "What's your main reason for using Biome?",
-            buttonTitle: "See Summary",
+            buttonTitle: "Next",
             isButtonDisabled: selectedGoals.isEmpty
         ) {
             selections.goals = Array(selectedGoals)
@@ -991,107 +997,350 @@ struct GoalsScreen: View {
     }
 }
 
+struct Risk: Identifiable {
+    let id = UUID()
+    let risk: String
+    let explanation: String
+    let emoji: String
+}
+
+struct Recommendation: Identifiable {
+    let id = UUID()
+    let recommendation: String
+    let explanation: String
+    let emoji: String
+}
+
+struct LineGauge: View {
+    let score: Double
+    let maxScore: Double = 100
+    @State private var animatedProgress: Double = 0
+    @State private var showLabel: Bool = false
+    
+    private var progress: Double {
+        score / maxScore
+    }
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            // Text("Your gut health diagnosis")
+            //     .font(.title2)
+            //     .fontWeight(.semibold)
+            //     .multilineTextAlignment(.center)
+            
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    // Full gradient background
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(stops: [
+                                    .init(color: Color(hex: "#FF4B4B"), location: 0.0),
+                                    .init(color: Color(hex: "#FF9049"), location: 0.3),
+                                    .init(color: Color(hex: "#FFD749"), location: 0.6),
+                                    .init(color: Color(hex: "#4BFF4B"), location: 1.0),
+                                ]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .frame(height: 16)
+                    
+                    let position = geometry.size.width * animatedProgress
+                    
+                    Group {
+                        // White line indicator
+                        Rectangle()
+                            .fill(.background)
+                            .frame(width: 3, height: 24)
+                            .position(x: position, y: 8)
+
+                        // Top triangle indicator
+                        Triangle()
+                            .rotation(.degrees(180))
+                            .fill(.primary)
+                            .frame(width: 12, height: 8)
+                            .position(x: position, y: -8)
+                        
+                        // Bottom triangle indicator
+                        Triangle()
+                            .fill(.primary)
+                            .frame(width: 12, height: 8)
+                            .position(x: position, y: 24)
+                    }
+                    .animation(.spring(response: 1.0, dampingFraction: 0.8), value: animatedProgress)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12) // Add padding for the triangles
+            
+            Text(scoreLabel(score))
+                .font(.headline)
+                .foregroundColor(.secondary)
+                .opacity(showLabel ? 1 : 0)
+                .animation(.easeIn.delay(1.2), value: showLabel)
+        }
+        .onAppear {
+            if score != 0 {
+                startAnimationSequence()
+            }
+        }
+        .onChange(of: score) { _ in
+            startAnimationSequence()
+        }
+    }
+    
+    private func startAnimationSequence() {
+        animatedProgress = 0
+        showLabel = false
+        
+        withAnimation(.spring(response: 1.0, dampingFraction: 0.8)) {
+            animatedProgress = progress
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            showLabel = true
+        }
+    }
+    
+    private func scoreLabel(_ score: Double) -> String {
+        switch score {
+        case 0 ..< 30:
+            return "Critical Attention Needed"
+        case 30 ..< 60:
+            return "Needs Improvement"
+        case 60 ..< 80:
+            return "Moderately Healthy"
+        default:
+            return "Optimal Health"
+        }
+    }
+}
+
+struct Triangle: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.midX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.closeSubpath()
+        return path
+    }
+}
+
 struct SummaryScreen: View {
     @Binding var currentScreen: OnboardingScreen
     @Binding var selections: OnboardingSelections
+    @Binding var isLoading: Bool
+    @State private var gutHealthScore: Int?
+    @State private var gutHealthDiagnosis: String?
+    @State private var scoreExplanation: String?
+    @State private var risks: [Risk] = []
+    @State private var recommendations: [Recommendation] = []
     
     var body: some View {
-        OnboardingContainerView(
-            title: "Your Profile Summary",
-            buttonTitle: "Start Using Biome"
-        ) {
-            withAnimation {
-                currentScreen = .auth
+        VStack(spacing: 0) {
+            ScrollView {
+                // if isLoading {
+                //    GeometryReader { geometry in
+                //         VStack {
+                //             Spacer()
+                //             ProgressView("Analyzing...")
+                //             Spacer()
+                //         }
+                //         .frame(width: geometry.size.width)
+                //         .frame(minHeight: geometry.frame(in: .global).height)
+                //     }
+                // } else {
+                LazyVStack(spacing: 24) {
+                    if !isLoading {
+                        Text("Your Gut Health Diagnosis")
+                                .font(.title3)
+                            .fontWeight(.semibold)
+                            .multilineTextAlignment(.center)
+                        
+                        if let score = gutHealthScore {
+                            LineGauge(score: Double(score))
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .padding(.vertical, 24)
+                        }
+                        
+                        // if let explanation = scoreExplanation {
+                        //     Text(explanation)
+                        //         .font(.body)
+                        //         .foregroundStyle(.secondary)
+                        //         .multilineTextAlignment(.center)
+                        //         .frame(maxWidth: .infinity, alignment: .center)
+                        // }
+                        
+                        if !risks.isEmpty {
+                            VStack(alignment: .leading, spacing: 16) {
+                                SharedComponents.titleWithDivider("Risk Assessment", color: .primary.opacity(0.5))
+                                
+                                VStack(spacing: 24) {
+                                    ForEach(risks) { risk in
+                                        HStack(alignment: .top, spacing: 16) {
+                                            Text(risk.emoji)
+                                                .font(.title3)
+                                                .fontWeight(.semibold)
+                                            
+                                            VStack(alignment: .leading, spacing: 16) {
+                                                Text(risk.risk)
+                                                    .font(.title3)
+                                                    .fontWeight(.semibold)
+                                                    .fixedSize(horizontal: false, vertical: true)
+                                                
+                                                SharedComponents.card {
+                                                    Text(risk.explanation)
+                                                        .font(.subheadline)
+                                                        .foregroundColor(.primary.opacity(0.5))
+                                                        .fixedSize(horizontal: false, vertical: true)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if !recommendations.isEmpty {
+                            VStack(alignment: .leading, spacing: 16) {
+                                SharedComponents.titleWithDivider("Recommendations", color: .primary.opacity(0.5))
+                                
+                                VStack(spacing: 24) {
+                                    ForEach(recommendations) { recommendation in
+                                        HStack(alignment: .top, spacing: 16) {
+                                            Text(recommendation.emoji)
+                                                .font(.title3)
+                                                .fontWeight(.semibold)
+                                            
+                                            VStack(alignment: .leading, spacing: 16) {
+                                                Text(recommendation.recommendation)
+                                                    .font(.title3)
+                                                    .fontWeight(.semibold)
+                                                    .fixedSize(horizontal: false, vertical: true)
+                                                
+                                                SharedComponents.card {
+                                                    Text(recommendation.explanation)
+                                                        .font(.subheadline)
+                                                        .foregroundColor(.primary.opacity(0.5))
+                                                        .fixedSize(horizontal: false, vertical: true)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top, 24)
+                .padding(.bottom, 24) // Add padding for button
+                // }
             }
-        } content: {
-            VStack(alignment: .leading, spacing: 24) {
-                Text("Your Profile Summary")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.top)
-                
-                Group {
-                    if let lastFeltGreat = selections.lastFeltGreat {
-                        summarySection("Last Felt Great", value: lastFeltGreat)
-                    }
-                    
-                    if let heightImperial = selections.heightImperial {
-                        summarySection("Height", value: "\(heightImperial.feet)'\(heightImperial.inches)\"")
-                    } else if let heightMetric = selections.heightMetric {
-                        summarySection("Height", value: "\(heightMetric) cm")
-                    }
-                    
-                    if let weightImperial = selections.weightImperial {
-                        summarySection("Weight", value: "\(weightImperial) lbs")
-                    } else if let weightMetric = selections.weightMetric {
-                        summarySection("Weight", value: "\(weightMetric) kg")
-                    }
-                    
-                    if let ageGroup = selections.ageGroup {
-                        summarySection("Age Group", value: ageGroup)
-                    }
-                    
-                    if let gender = selections.gender {
-                        summarySection("Gender", value: gender)
+            .overlay {
+                if isLoading {
+                    ProgressView("Analyzing...")
+                }
+            }
+
+            if !isLoading {
+                // Fixed button at bottom
+                VStack {
+                    SharedComponents.primaryButton(title: "Get Started") {
+                        withAnimation {
+                            currentScreen = .auth
+                        }
                     }
                 }
-                
-                Group {
-                    if !selections.relatedExperiences.isEmpty {
-                        summaryListSection("Related Experiences", items: selections.relatedExperiences)
-                    }
-                    
-                    if let gutFeeling = selections.currentGutFeeling {
-                        summarySection("Current Gut Feeling", value: gutFeeling)
-                    }
-                    
-                    if !selections.commonSymptoms.isEmpty {
-                        summaryListSection("Common Symptoms", items: selections.commonSymptoms)
-                    }
-                    
-                    if !selections.dietaryPreferences.isEmpty {
-                        summaryListSection("Dietary Preferences", items: selections.dietaryPreferences)
-                    }
-                    
-                    if !selections.digestiveConditions.isEmpty {
-                        summaryListSection("Digestive Conditions", items: selections.digestiveConditions)
-                    }
-                    
-                    if !selections.goals.isEmpty {
-                        summaryListSection("Goals", items: selections.goals)
-                    }
-                }
+                .padding(.horizontal)
+                .padding(.top, 12)
+                .padding(.bottom, 24)
+                .background(.background)
+            }
+        }
+        .onAppear {
+            if gutHealthScore == nil {
+                analyzeOnboardingData()
             }
         }
     }
     
-    private func summarySection(_ title: String, value: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.headline)
-                .foregroundColor(.secondary)
-            Text(value)
-                .font(.body)
+    private func analyzeOnboardingData() {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        
+        guard let jsonData = try? encoder.encode(selections),
+              let jsonString = String(data: jsonData, encoding: .utf8) else {
+            return
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-    
-    private func summaryListSection(_ title: String, items: [String]) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.headline)
-                .foregroundColor(.secondary)
-            ForEach(items, id: \.self) { item in
-                HStack(alignment: .top) {
-                    Text("•")
-                        .font(.body)
-                    Text(item)
-                        .font(.body)
+        
+        Task {
+            do {
+                let analysis = try await OpenAIService().onboardingCompletion(onboardingData: jsonString)
+                
+                DispatchQueue.main.async {
+                    self.gutHealthScore = analysis["gutHealthScore"] as? Int
+                    self.gutHealthDiagnosis = analysis["gutHealthDiagnosis"] as? String
+                    self.scoreExplanation = analysis["scoreExplanation"] as? String
+                    
+                    // Handle risks as either objects or strings
+                    if let risks = analysis["riskAssessment"] as? [[String: Any]] {
+                        self.risks = risks.compactMap { risk in
+                            guard let riskTitle = risk["risk"] as? String,
+                                  let explanation = risk["explanation"] as? String,
+                                  let emoji = risk["emoji"] as? String else {
+                                return nil
+                            }
+                            return Risk(risk: riskTitle, explanation: explanation, emoji: emoji)
+                        }
+                    } else if let risks = analysis["riskAssessment"] as? [String] {
+                        // Convert simple strings to Risk objects
+                        self.risks = risks.map { riskString in
+                            Risk(
+                                risk: riskString,
+                                explanation: "This risk factor requires attention and monitoring.",
+                                emoji: "⚠️"
+                            )
+                        }
+                    }
+                    
+                    // Handle recommendations as either objects or strings
+                    if let recommendations = analysis["recommendations"] as? [[String: Any]] {
+                        self.recommendations = recommendations.compactMap { recommendation in
+                            guard let rec = recommendation["recommendation"] as? String,
+                                  let explanation = recommendation["explanation"] as? String,
+                                  let emoji = recommendation["emoji"] as? String else {
+                                return nil
+                            }
+                            return Recommendation(
+                                recommendation: rec,
+                                explanation: explanation,
+                                emoji: emoji
+                            )
+                        }
+                    } else if let recommendations = analysis["recommendations"] as? [String] {
+                        // Convert simple strings to Recommendation objects
+                        self.recommendations = recommendations.map { recString in
+                            Recommendation(
+                                recommendation: recString,
+                                explanation: "Follow this recommendation to improve your gut health.",
+                                emoji: "💡"
+                            )
+                        }
+                    }
+                    
+                    self.isLoading = false
+                }
+            } catch {
+                print("Error analyzing onboarding data:", error)
+                print("Error details:", String(describing: error))
+                DispatchQueue.main.async {
+                    self.isLoading = false
                 }
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
