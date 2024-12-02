@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  Swiftly
-//
-//  Created by Patrick on 10/25/24.
-//
-
 import SwiftUI
 
 struct ContentView: View {
@@ -14,7 +7,8 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             if authVM.authState == .unauthenticated {
-                AuthView()
+                // AuthView()
+                OnboardingView()
             } else {
                 BottomNavigationView()
             }

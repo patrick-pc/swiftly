@@ -2,105 +2,329 @@ import Foundation
 import SwiftUI
 
 struct VisionView: View {
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var mainVM = MainViewModel()
     @State private var showImagePicker = false
     @State private var inputImage: UIImage?
-
+    @State private var currentDate = Date()
+    @State private var mealDescription: String = ""
+    @State private var selectedMealType: String?
+    
+    @State private var showGutScore = false
     @State private var gutHealthScore: Int?
     @State private var tips: [Tip] = []
     @State private var symptoms: [Symptom] = []
-    @State private var isProcessing: Bool = false
-
+    @State private var isProcessing = true
+    
+    var editingLog: Log?
+    
+    init(editingLog: Log? = nil) {
+        self.editingLog = editingLog
+        if let log = editingLog {
+            _mealDescription = State(initialValue: log.data.mealDescription ?? "")
+            _selectedMealType = State(initialValue: log.data.mealType)
+            _gutHealthScore = State(initialValue: log.data.gutScore)
+            if let mealTips = log.data.mealTips {
+                _tips = State(initialValue: mealTips.map { tip in
+                    Tip(tip: tip.tip, explanation: tip.explanation, emoji: "🔍") // Default emoji
+                })
+            }
+            if let mealSymptoms = log.data.mealSymptoms {
+                _symptoms = State(initialValue: mealSymptoms.map { symptom in
+                    Symptom(symptom: symptom.symptom, explanation: symptom.explanation, emoji: "⚠️") // Default emoji
+                })
+            }
+            // Show gut score immediately when editing
+            _showGutScore = State(initialValue: true)
+            _isProcessing = State(initialValue: false)
+        }
+    }
+    
+    // Add a timer to keep the time updated
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    
+    // Replace the mealTypes array
+    let mealTypes = ["Breakfast", "Lunch", "Dinner", "Snack"]
+    
+    var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d, yyyy"
+        return formatter
+    }
+    
+    var timeFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm a"
+        return formatter
+    }
+    
     var body: some View {
-        ZStack {
-            if isProcessing {
-                ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if let score = gutHealthScore {
-                ScrollView {
-                    VStack(spacing: 24) {
-                        GutHealthGauge(score: Double(score))
-
-                        if !tips.isEmpty {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Tips")
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-
-                                VStack(spacing: 16) {
-                                    ForEach(tips) { tip in
-                                        VStack(alignment: .leading, spacing: 8) {
-                                            Text(tip.tip)
-                                                .font(.headline)
-                                                .fixedSize(horizontal: false, vertical: true)
-                                            Text(tip.explanation)
-                                                .font(.subheadline)
-                                                .foregroundColor(.secondary)
-                                                .fixedSize(horizontal: false, vertical: true)
-                                        }
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .padding()
-                                        .background(Color.gray.opacity(0.1))
-                                        .cornerRadius(10)
-                                    }
-                                }
-                            }
-                        }
-
-                        if !symptoms.isEmpty {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Symptoms")
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-
-                                VStack(spacing: 16) {
-                                    ForEach(symptoms) { symptom in
-                                        VStack(alignment: .leading, spacing: 8) {
-                                            Text(symptom.symptom)
-                                                .font(.headline)
-                                                .fixedSize(horizontal: false, vertical: true)
-                                            Text(symptom.explanation)
-                                                .font(.subheadline)
-                                                .foregroundColor(.secondary)
-                                                .fixedSize(horizontal: false, vertical: true)
-                                        }
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .padding()
-                                        .background(Color.gray.opacity(0.1))
-                                        .cornerRadius(10)
-                                    }
-                                }
-                            }
+        NavigationStack {
+            VStack(spacing: 32) {
+                // Top buttons
+                HStack(spacing: 16) {
+                    SharedComponents.card {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Date")
+                                .font(.subheadline)
+                                .foregroundStyle(.primary.opacity(0.5))
+                            
+                            Text(dateFormatter.string(from: currentDate))
+                                .font(.headline)
                         }
                     }
-                    .padding()
+                    
+                    SharedComponents.card {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Time")
+                                .font(.subheadline)
+                                .foregroundStyle(.primary.opacity(0.5))
+                            
+                            Text(timeFormatter.string(from: currentDate))
+                                .font(.headline)
+                        }
+                    }
                 }
-            } else {
-                VStack {
-                    Spacer()
-                    SharedComponents.roundButton(title: "Upload Food/Drink") {
-                        showImagePicker = true
+                .padding(.horizontal)
+                .padding(.top, 24)
+                .onReceive(timer) { _ in
+                    currentDate = Date()
+                }
+
+                // Meal Type Toggle
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Meal Type")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                    
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        LazyHStack(spacing: 8) {
+                            ForEach(mealTypes, id: \.self) { mealType in
+                                MealTypeToggleButton(
+                                    title: mealType,
+                                    isSelected: selectedMealType == mealType,
+                                    action: { selectedMealType = mealType }
+                                )
+                            }
+                        }
+                        .padding(.horizontal, 1)
+                    }
+                    .frame(height: 44, alignment: .top)
+                }
+                .padding(.horizontal)
+
+                if gutHealthScore == nil {
+                    // Camera and Photos buttons
+                    VStack(spacing: 12) {
+                        // Camera Button
+                        Button(action: {
+                            showImagePicker.toggle()
+                        }) {
+                            HStack {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "camera.fill")
+                                        .font(.headline)
+                                    Text("Camera")
+                                        .font(.headline)
+                                }
+                                
+                                Spacer()
+                                
+                                Image(systemName: "chevron.right")
+                                    .font(.headline)
+                                    .foregroundStyle(.primary.opacity(0.5))
+                            }
+                            .padding()
+                            .foregroundStyle(.primary)
+                            .background(.primary.opacity(0.1))
+                            .cornerRadius(64)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 64)
+                                    .stroke(Color.primary.opacity(0.3), lineWidth: 1)
+                            )
+                        }
+                        
+                        // Photos Button
+                        Button(action: {
+                            showImagePicker.toggle()
+                        }) {
+                            HStack {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "photo.fill")
+                                        .font(.headline)
+                                    Text("Photos")
+                                        .font(.headline)
+                                }
+                                
+                                Spacer()
+                                
+                                Image(systemName: "chevron.right")
+                                    .font(.headline)
+                                    .foregroundStyle(.primary.opacity(0.5))
+                            }
+                            .padding()
+                            .foregroundStyle(.primary)
+                            .background(.primary.opacity(0.1))
+                            .cornerRadius(64)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 64)
+                                    .stroke(Color.primary.opacity(0.3), lineWidth: 1)
+                            )
+                        }
                     }
                     .padding(.horizontal)
+                }
+
+                // Meal Description section
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("What did you eat? (Optional)")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                    
+                    TextField("Describe your meal", text: $mealDescription, axis: .vertical)
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.primary.opacity(0.3))
+                        .lineLimit(mealDescription.isEmpty ? 1...1 : 1...3)
+                        .textFieldStyle(.plain)
+                }
+                .padding(.horizontal)
+                
+                if let score = gutHealthScore {
+                    // Gut Health Score section
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Gut Health Score")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        
+                        Text("\(score)/100")
+                            .font(.title)
+                            .fontWeight(.semibold)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal)
+                    
                     Spacer()
+                    
+                    // Done button
+                    Button(action: {
+                        saveMealLog()
+                    }) {
+                        Text("Done")
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding()
+                            .background(selectedMealType != nil ? Color.primary : Color.primary.opacity(0.3))
+                            .foregroundStyle(.background)
+                            .cornerRadius(64)
+                    }
+                    .disabled(selectedMealType == nil)
+                    .padding(.horizontal)
+                    .padding(.bottom)
+                } else {
+                    Spacer()
+                    
+                    Button(action: {
+                        isProcessing = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            showGutScore = true
+                            analyzeSelectedImage()
+                        }
+                    }) {
+                        Text("Analyze")
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding()
+                            .background(!mealDescription.isEmpty ? Color.primary : Color.primary.opacity(0.3))
+                            .foregroundStyle(.background)
+                            .cornerRadius(64)
+                    }
+                    .disabled(mealDescription.isEmpty)
+                    .padding(.horizontal)
+                    .padding(.bottom)
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text(editingLog != nil ? "Edit Meal" : "Meal Log")
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .fontDesign(.rounded)
+                }
+            }
+            .sheet(isPresented: $showImagePicker) {
+                ImagePicker(selectedImage: $inputImage, sourceType: .photoLibrary)
+            }
+            .sheet(isPresented: $showGutScore) {
+                GutScoreView(
+                    isProcessing: isProcessing,
+                    gutHealthScore: gutHealthScore,
+                    tips: tips,
+                    symptoms: symptoms
+                )
+            }
+            .onChange(of: inputImage) { _ in
+                if let _ = inputImage {
+                    isProcessing = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        showGutScore = true
+                        analyzeSelectedImage()
+                    }
                 }
             }
         }
-        .sheet(isPresented: $showImagePicker) {
-            ImagePicker(selectedImage: $inputImage, sourceType: .photoLibrary)
-        }
-        .onChange(of: inputImage) { _ in
-            analyzeSelectedImage()
-        }
     }
-
+    
+    private func saveMealLog() {
+        let symptomDataArray = symptoms.map { symptom in
+            MealSymptomData(
+                symptom: symptom.symptom,
+                explanation: symptom.explanation
+            )
+        }
+        
+        let tipDataArray = tips.map { tip in
+            MealTipData(
+                tip: tip.tip,
+                explanation: tip.explanation
+            )
+        }
+        
+        let logData = LogData(
+            gutScore: gutHealthScore,
+            mealType: selectedMealType,
+            mealDescription: mealDescription,
+            mealTips: tipDataArray,
+            mealSymptoms: symptomDataArray
+        )
+        
+        if let editingLog = editingLog {
+            mainVM.updateLog(
+                id: editingLog.id,
+                type: "Meal",
+                note: "",
+                data: logData
+            )
+        } else {
+            mainVM.addLog(
+                type: "Meal",
+                note: "",
+                data: logData
+            )
+        }
+        
+        dismiss()
+    }
+    
     private func analyzeSelectedImage() {
         guard let image = inputImage,
               let imageData = image.jpegData(compressionQuality: 0.8) else { return }
-
+        
         let base64Image = imageData.base64EncodedString()
-
-        isProcessing = true // Start processing
-
+        
         Task {
             do {
                 let analysis = try await OpenAIService().analyzeImage(base64Image: base64Image)
@@ -108,6 +332,9 @@ struct VisionView: View {
                     self.gutHealthScore = analysis["gutHealthScore"] as? Int
                     self.tips = parseTips(analysis["tips"] as? [[String: Any]] ?? [])
                     self.symptoms = parseSymptoms(analysis["symptoms"] as? [[String: Any]] ?? [])
+                    if let description = analysis["mealDescription"] as? String {
+                        self.mealDescription = description
+                    }
                     self.isProcessing = false
                 }
             } catch {
@@ -118,36 +345,26 @@ struct VisionView: View {
             }
         }
     }
-
-    struct Tip: Identifiable {
-        let id = UUID()
-        let tip: String
-        let explanation: String
-    }
-
-    struct Symptom: Identifiable {
-        let id = UUID()
-        let symptom: String
-        let explanation: String
-    }
-
+    
     private func parseTips(_ tipsData: [[String: Any]]) -> [Tip] {
         tipsData.compactMap { dict in
             if let tip = dict["tip"] as? String,
-               let explanation = dict["explanation"] as? String
+               let explanation = dict["explanation"] as? String,
+               let emoji = dict["emoji"] as? String
             {
-                return Tip(tip: tip, explanation: explanation)
+                return Tip(tip: tip, explanation: explanation, emoji: emoji)
             }
             return nil
         }
     }
-
+    
     private func parseSymptoms(_ symptomsData: [[String: Any]]) -> [Symptom] {
         symptomsData.compactMap { dict in
             if let symptom = dict["symptom"] as? String,
-               let explanation = dict["explanation"] as? String
+               let explanation = dict["explanation"] as? String,
+               let emoji = dict["emoji"] as? String
             {
-                return Symptom(symptom: symptom, explanation: explanation)
+                return Symptom(symptom: symptom, explanation: explanation, emoji: emoji)
             }
             return nil
         }
@@ -287,7 +504,7 @@ struct GutHealthGauge: View {
                     .animation(.easeIn.delay(1.2), value: showLabel)
             }
         }
-        .padding()
+        // .padding()
         .onAppear {
             startAnimationSequence()
         }
@@ -324,6 +541,29 @@ struct GutHealthGauge: View {
                 return "Good"
             default:
                 return "Excellent"
+        }
+    }
+}
+
+// Update MealTypeToggleButton struct
+struct MealTypeToggleButton: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.headline)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(isSelected ? Color.primary.opacity(0.1) : Color.clear)
+                .foregroundColor(.primary)
+                .cornerRadius(24)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24)
+                        .stroke(Color.primary.opacity(0.1), lineWidth: 1)
+                )
         }
     }
 }

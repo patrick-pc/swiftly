@@ -10,65 +10,70 @@ struct ItemView: View {
 
     var body: some View {
         NavigationStack {
-            VStack {
-                if itemVM.items.isEmpty {
-                    Text("Nothing here yet")
-                        .foregroundColor(.gray)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else {
-                    ScrollView {
-                        VStack(spacing: 24) {
-                            ForEach(itemVM.items) { item in
-                                SharedComponents.card {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(formattedDate(item.createdAt.dateValue()))
-                                            .font(.caption)
-                                            .foregroundColor(.primary.opacity(0.8))
-                                        Text(item.title)
-                                            .font(.title2)
-                                            .fontWeight(.semibold)
-                                        Text(item.description)
-                                            .font(.subheadline)
-                                            .padding(.top)
+            VStack(spacing: 0) {
+                // Calendar View
+                CalendarView(selectedDate: $itemVM.selectedDate)
+                    .padding(.bottom)
+
+                // Items List
+                VStack {
+                    if itemVM.filteredItems.isEmpty {
+                        Text("No items for this date")
+                            .foregroundColor(.gray)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else {
+                        ScrollView {
+                            VStack(spacing: 24) {
+                                ForEach(itemVM.filteredItems) { item in
+                                    SharedComponents.card {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(formattedDate(item.createdAt.dateValue()))
+                                                .font(.caption)
+                                                .foregroundColor(.primary.opacity(0.8))
+                                            Text(item.title)
+                                                .font(.title2)
+                                                .fontWeight(.semibold)
+                                            Text(item.description)
+                                                .font(.subheadline)
+                                                .padding(.top)
+                                        }
+                                    }
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        selectedItem = item
+                                        itemTitle = item.title
+                                        itemDescription = item.description
+                                        showUpsertItemSheet = true
                                     }
                                 }
-                                .contentShape(Rectangle()) // Makes the entire area tappable
-                                .onTapGesture {
-                                    // Set the selected item and show the edit sheet
-                                    selectedItem = item
-                                    itemTitle = item.title
-                                    itemDescription = item.description
-                                    showUpsertItemSheet = true
-                                }
+                                .onDelete(perform: deleteItems)
                             }
-                            .onDelete(perform: deleteItems)
+                            .padding(.top)
+                            .padding(.horizontal)
                         }
-                        .padding(.top)
-                        .padding(.horizontal)
                     }
                 }
             }
-            // .navigationTitle("Firestore")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Text("Firestore")
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                        .fontDesign(.rounded)
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        selectedItem = nil
-                        itemTitle = ""
-                        itemDescription = ""
-                        showUpsertItemSheet = true
-                    }) {
-                        Image(systemName: "plus")
-                            .fontWeight(.semibold)
-                    }
-                }
-            }
+            // .navigationBarTitleDisplayMode(.inline)
+            // .toolbar {
+            //     ToolbarItem(placement: .principal) {
+            //         Text("Biome")
+            //             .font(.title3)
+            //             .fontWeight(.semibold)
+            //             .fontDesign(.rounded)
+            //     }
+            //     ToolbarItem(placement: .navigationBarTrailing) {
+            //         Button(action: {
+            //             selectedItem = nil
+            //             itemTitle = ""
+            //             itemDescription = ""
+            //             showUpsertItemSheet = true
+            //         }) {
+            //             Image(systemName: "plus")
+            //                 .fontWeight(.semibold)
+            //         }
+            //     }
+            // }
         }
         .sheet(isPresented: $showUpsertItemSheet) {
             upsertItemSheet

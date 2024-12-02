@@ -30,4 +30,28 @@ enum SharedComponents {
             )
             .foregroundStyle(.primary)
     }
+
+    static func titleWithDivider(_ text: String, color: Color = .primary) -> some View {
+        HStack(alignment: .center, spacing: 20) {
+            Text(text)
+                .font(.headline)
+                .foregroundColor(color)
+
+            Rectangle()
+                .fill(color.opacity(0.1))
+                .frame(height: 1)
+        }
+    }
+
+    static func primaryButton(title: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.headline)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding()
+                .background(Color.primary)
+                .foregroundStyle(.background)
+                .cornerRadius(64)
+        }
+    }
 }

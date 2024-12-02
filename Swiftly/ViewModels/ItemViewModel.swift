@@ -1,10 +1,3 @@
-//
-//  ItemViewModel.swift
-//  Swiftly
-//
-//  Created by Patrick on 10/28/24.
-//
-
 // ItemViewModel.swift
 
 import Combine
@@ -15,6 +8,18 @@ import Foundation
 
 class ItemViewModel: ObservableObject {
     @Published var items: [Item] = []
+    @Published var selectedDate: Date = .init()
+
+    var filteredItems: [Item] {
+        items.filter { item in
+            Calendar.current.isDate(
+                item.createdAt.dateValue(),
+
+                inSameDayAs: selectedDate
+            )
+        }
+    }
+
     private var listenerRegistration: ListenerRegistration?
     private let firebaseService = FirebaseService.shared
 
